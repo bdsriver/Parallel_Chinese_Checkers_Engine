@@ -151,6 +151,7 @@ void setMovesAndJumps(){
     for (auto j:jumps_possible){
       bitboard2 = setBit(bitboard2,j);
     }
+    jumps[i] = bitboard2;
 
   }
 
