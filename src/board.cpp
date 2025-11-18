@@ -176,8 +176,8 @@ void printBoard(char board[][17]) {
   for (int i = 0; i < 17; i++) {
     for (int j = 0; j < 17; j++) {
       if (inBounds[i][j]) {
-        if (board[i][j] >= '0' && board[i][j] <= '9') {
-            printf("[%c]", board[i][j]);
+        if (board[i][j] == '+') { 
+            printf("[+]");
         } 
         else if (board[i][j] >= 0 && board[i][j] <= 9) {
             printf("[%d]", board[i][j]);
@@ -294,31 +294,61 @@ std::vector<int> initPieces(char board[][BOARD_DIM], char playerID){
 }
 
 __uint128_t boardToOccupiedBitboard(char board[][BOARD_DIM]){
+  __uint128_t occupied = 0;
+
   auto setBit = [](__uint128_t n, int bit) -> __uint128_t {
     return (n | ((__uint128_t)1 << bit));
   };
-  auto isInBounds = [](int x, int y) -> bool {
-    return x>=0 && y>=0 && x<BOARD_DIM && y<BOARD_DIM && inBounds[y][x];
-  };
 
-  __uint128_t bitboard = 0;
+  //create backwards map for this function
+  int indicesToBit[BOARD_DIM][BOARD_DIM];
   for (int i=0; i<SPACE_AMOUNT; i++){
-    std::pair<int,int> p = bitToIndices[i];
-    int x = p.first;
-    int y = p.second;
-    if (isInBounds(x,y) && board[y][x] != ' '){
-      bitboard = setBit(bitboard,i);
+    std::pair<int, int> p = bitToIndices[i];
+    indicesToBit[p.second][p.first] = i;
+  }
+
+  for (int i=0; i<BOARD_DIM; i++){
+    for (int j=0; j<BOARD_DIM; j++){
+      if (board[j][i] != ' '){
+        occupied = setBit(occupied,indicesToBit[j][i]);
+      }
     }
   }
-  return bitboard;
+  return occupied;
 }
 
 int main() {
   setMovesAndJumps();
-  char testBoard[BOARD_DIM][BOARD_DIM];
-  copyBoard(startBoard, testBoard);
-  printBoard(testBoard);
 
+  char board[BOARD_DIM][BOARD_DIM];
+  copyBoard(startBoard, board);
+
+  printf("Starting board:\n");
+  printBoard(board);
+
+  //Initialize pieces and generate moves for player example
+  //We can parallelize this loop for multiple players
+  for (int i = 0; i < PLAYER_PIECE_AMOUNT; i++) {
+    std::vector<int> pieces = initPieces(board, i); // initialize pieces for player 0-5
+    __uint128_t occupied = boardToOccupiedBitboard(board); // get occupied bitboard
+    std::vector<std::pair<int,int>> moves = generateMoves(occupied, pieces); // generate moves
+    
+    // Show moves on the board
+    char boardWithMoves[BOARD_DIM][BOARD_DIM];
+    copyBoard(board, boardWithMoves);
+
+    for (const auto& move : moves) {
+        int destIndex = move.second;
+        auto coord = bitToIndices[destIndex];
+        int x = coord.first;
+        int y = coord.second;
+
+        if (boardWithMoves[y][x] == ' ') {
+            boardWithMoves[y][x] = '+';
+        }
+    }
+    printf("\nPlayer %d possible moves:\n", i);
+    printBoard(boardWithMoves);
+  }
   return 0;
-
 }
