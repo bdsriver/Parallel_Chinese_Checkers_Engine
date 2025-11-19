@@ -317,38 +317,3 @@ __uint128_t boardToOccupiedBitboard(char board[][BOARD_DIM]){
   return occupied;
 }
 
-int main() {
-  setMovesAndJumps();
-
-  char board[BOARD_DIM][BOARD_DIM];
-  copyBoard(startBoard, board);
-
-  printf("Starting board:\n");
-  printBoard(board);
-
-  //Initialize pieces and generate moves for player example
-  //We can parallelize this loop for multiple players
-  for (int i = 0; i < PLAYER_PIECE_AMOUNT; i++) {
-    std::vector<int> pieces = initPieces(board, i); // initialize pieces for player 0-5
-    __uint128_t occupied = boardToOccupiedBitboard(board); // get occupied bitboard
-    std::vector<std::pair<int,int>> moves = generateMoves(occupied, pieces); // generate moves
-    
-    // Show moves on the board
-    char boardWithMoves[BOARD_DIM][BOARD_DIM];
-    copyBoard(board, boardWithMoves);
-
-    for (const auto& move : moves) {
-        int destIndex = move.second;
-        auto coord = bitToIndices[destIndex];
-        int x = coord.first;
-        int y = coord.second;
-
-        if (boardWithMoves[y][x] == ' ') {
-            boardWithMoves[y][x] = '+';
-        }
-    }
-    printf("\nPlayer %d possible moves:\n", i);
-    printBoard(boardWithMoves);
-  }
-  return 0;
-}
