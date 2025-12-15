@@ -48,7 +48,7 @@ float eval(std::vector<std::vector<int>> pieces, int currTurn, int startPlayer){
     float subtotal = 0;
     for (int p:pieces[i]){
       float val = pieceValues[i][p];
-      val = (i==startPlayer) ? val : val*(float)(-1)/(float)(numPlayers-1);
+      val = (i==startPlayer) ? val : (-val) / (float)(numPlayers-1);
       subtotal += val;
     }
     total += subtotal;

@@ -49,3 +49,4 @@ SearchResult Search(__uint128_t *board, std::vector<std::vector<int>> *pieces, S
 
 float eval(std::vector<std::vector<int>> pieces, int currTurn, int startPlayer);
 
+float moveVal(Move m);

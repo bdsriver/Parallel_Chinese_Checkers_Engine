@@ -58,3 +58,5 @@ void makeMove(__uint128_t *occupied, std::pair<int,int> move);
 
 //change the "occupied" bitboard and piece pos back after calling makeMove() and exploring tree
 void unMakeMove(__uint128_t *occupied, std::pair<int,int> move);
+
+void printBoard(char board[][17]);

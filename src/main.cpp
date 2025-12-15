@@ -6,26 +6,26 @@
 #include <vector>
 #include <utility>
 #include <cstdint>
+#include <string>
 
 int main(){
   setMovesAndJumps();
-  std::vector<int> myPieces = initPieces(startBoard,3);
   __uint128_t occupied = boardToOccupiedBitboard(startBoard);
-  std::vector<std::pair<int,int>> myMoves = generateMoves(occupied,myPieces);
   
-  for (auto m:myMoves){
-    int from = m.first;
-    int to = m.second;
-    std::cout << from << ',' << to << std::endl;
-  }
-  // to check if bit is set while in debug console: 
-  // p (bool)(occupied & ((__uint128_t)1 << bit))
-  int myPiece = 111;
-  makeMove(&occupied,myMoves[0],&myPiece);
-  unMakeMove(&occupied,myMoves[0],&myPiece);
-
+  
+  //start position eval of each move
   std::vector<std::vector<int>> pieces = startPoints;
-  std::cout << eval(pieces, 0,0) << std::endl;
+  std::vector<std::pair<int,int>> myMoves = generateMoves(occupied,startPoints[0]);
+  printBoard(startBoard);
+  float startEval = eval(pieces, 0,0);
+  std::cout << "Start Position Eval: " << startEval << std::endl;
+  for (auto m:myMoves){
+    makeMove(&occupied,m);
+    float newEval = startEval - moveVal(Move(m,true,0));
+    std::cout << "Move: " << m.first << ',' << m.second << " Eval: " << newEval <<std::endl;
+    unMakeMove(&occupied,m);
+  }
+  
   
 
 }
