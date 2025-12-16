@@ -275,7 +275,7 @@ void printBoard(char board[][17]) {
   }
 }
 
-std::vector<std::pair<int,int>> generateMoves(__uint128_t occupied, std::vector<int> pieces){
+std::vector<std::pair<int,int>> generateMoves(__uint128_t occupied, __uint128_t pieces){
   std::vector<std::pair<int,int>> possibleMoves;
 
   auto setBit = [](__uint128_t n, int bit) -> __uint128_t {
@@ -289,8 +289,18 @@ std::vector<std::pair<int,int>> generateMoves(__uint128_t occupied, std::vector<
   };
   
   //Generate one-space moves
+  __uint128_t temp = pieces;
   for (int i=0; i<PLAYER_PIECE_AMOUNT; i++){
-    __uint128_t pieceMoves = moves[pieces[i]] & (~occupied);
+    int startPos = 0;
+    if((__uint64_t)temp){
+      startPos = __builtin_ctzll((__uint64_t)temp);
+    }
+    else{
+      startPos = __builtin_ctzll((uint64_t)(temp >> 64)) + 64;
+    }
+    temp &= temp -1;
+
+    __uint128_t pieceMoves = moves[startPos] & (~occupied);
     //find set bits to get possible piece squares
     //split 128 bit uint into 2 64 bit uints
     uint64_t low = (uint64_t)pieceMoves;
@@ -298,19 +308,28 @@ std::vector<std::pair<int,int>> generateMoves(__uint128_t occupied, std::vector<
     while (low){
       int trailing_zeros = __builtin_ctzll(low);//supported by gcc
       low &= low-1; //clear that set bit
-      possibleMoves.push_back(std::pair<int,int>(pieces[i],trailing_zeros));
+      possibleMoves.push_back(std::pair<int,int>(startPos,trailing_zeros));
     }
     while (high){
       int trailing_zeros = __builtin_ctzll(high);
       high &= high-1;
-      possibleMoves.push_back(std::pair<int,int>(pieces[i],trailing_zeros+64));//add 64 for high address
+      possibleMoves.push_back(std::pair<int,int>(startPos,trailing_zeros+64));//add 64 for high address
     }
   }
 
   //Generate jumps with DFS
+  temp = pieces;
   for (int i=0; i<PLAYER_PIECE_AMOUNT; i++){
     //start with a point to jump from being your current spot and add new points
-    std::vector<int> jumpPoints = {pieces[i]};
+    int startPos;
+    if((__uint64_t)temp){
+      startPos = __builtin_ctzll((__uint64_t)temp);
+    }
+    else{
+      startPos = __builtin_ctzll((uint64_t)(temp >> 64)) + 64;
+    }
+    temp &= temp-1;
+    std::vector<int> jumpPoints = {startPos};
     // "hashmap" to check if we already jumped to a spot
     __uint128_t jumpedTo = 0;
 
@@ -333,7 +352,7 @@ std::vector<std::pair<int,int>> generateMoves(__uint128_t occupied, std::vector<
         int trailing_zeros = __builtin_ctzll(low);
         low &= low-1;
         if (bitIsSet(occupied,halfJumps[startSpace][trailing_zeros])  && bitIsSet(~jumpedTo,trailing_zeros)){
-          possibleMoves.push_back(std::pair<int,int>(pieces[i],trailing_zeros));
+          possibleMoves.push_back(std::pair<int,int>(startPos,trailing_zeros));
           jumpPoints.push_back(trailing_zeros);
         }        
       }
@@ -342,7 +361,7 @@ std::vector<std::pair<int,int>> generateMoves(__uint128_t occupied, std::vector<
         high &= high-1;
         //check that there is a piece to jump over && we have not visited the landing space on our search
         if (bitIsSet(occupied,halfJumps[startSpace][trailing_zeros]) && bitIsSet(~jumpedTo,trailing_zeros)){
-          possibleMoves.push_back(std::pair<int,int>(pieces[i],trailing_zeros));
+          possibleMoves.push_back(std::pair<int,int>(startPos,trailing_zeros));
           jumpPoints.push_back(trailing_zeros);
         }
       }
@@ -405,7 +424,7 @@ void makeMove(__uint128_t *occupied, std::pair<int,int> move, int *piecePos){
   //set the new space bit
   *occupied = (*occupied) | ((__uint128_t)1 << move.second);
   //unset the old space bit
-  *occupied = (*occupied) & (~((__uint128_t)1 << move.first));
+  *occupied = (*occupied) & ~(((__uint128_t)1 << move.first));
 }
 
 void unMakeMove(__uint128_t *occupied, std::pair<int,int> move, int *piecePos){
@@ -414,19 +433,36 @@ void unMakeMove(__uint128_t *occupied, std::pair<int,int> move, int *piecePos){
   //set the old space bit
   *occupied = (*occupied) | ((__uint128_t)1 << move.first);
   //unset the new space bit
-  *occupied = (*occupied) & (~(__uint128_t)1 << move.second);
+  *occupied = (*occupied) & ~((__uint128_t)1 << move.second);
 }
 
 void makeMove(__uint128_t *occupied, std::pair<int,int> move){
   //set the new space bit
   *occupied = (*occupied) | ((__uint128_t)1 << move.second);
   //unset the old space bit
-  *occupied = (*occupied) & (~((__uint128_t)1 << move.first));
+  *occupied = (*occupied) & ~(((__uint128_t)1 << move.first));
+  int x = 0;
 }
 
 void unMakeMove(__uint128_t *occupied, std::pair<int,int> move){
   //set the old space bit
   *occupied = (*occupied) | ((__uint128_t)1 << move.first);
   //unset the new space bit
-  *occupied = (*occupied) & (~(__uint128_t)1 << move.second);
+  *occupied = (*occupied) & ~((__uint128_t)1 << move.second);
+  int x = 0;
+}
+
+std::vector<__uint128_t> pieceVectorToBitboards(std::vector<std::vector<int>> pieces){
+  auto setBit = [](__uint128_t n, int bit) -> __uint128_t {
+    return (n | ((__uint128_t)1 << bit));
+  };
+  std::vector<__uint128_t> newPieces;
+  for (std::vector<int> v:pieces){
+    __uint128_t bitboard = 0;
+    for(int p:v){
+      bitboard = setBit(bitboard,p);
+    }
+    newPieces.push_back(bitboard);
+  }
+  return newPieces;
 }

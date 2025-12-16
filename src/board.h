@@ -39,7 +39,7 @@ void copyBoard(char original[][BOARD_DIM], char copy[][BOARD_DIM]);
 //return a vector of {space1, space2} pairs
 //occupied is a bitboard of piece locations on the board
 //pieces is a map of {<0-9>,<piece location>} for the player's piece
-std::vector<std::pair<int,int>> generateMoves( __uint128_t occupied, std::vector<int> pieces);
+std::vector<std::pair<int,int>> generateMoves( __uint128_t occupied, __uint128_t pieces);
 
 // return a vector with the locations of each piece
 std::vector<int> initPieces(char board[][BOARD_DIM], char playerID);
@@ -60,3 +60,6 @@ void makeMove(__uint128_t *occupied, std::pair<int,int> move);
 void unMakeMove(__uint128_t *occupied, std::pair<int,int> move);
 
 void printBoard(char board[][17]);
+
+//generate a bitboard for pices of each player's pieces
+std::vector<__uint128_t> pieceVectorToBitboards(std::vector<std::vector<int>> pieces);

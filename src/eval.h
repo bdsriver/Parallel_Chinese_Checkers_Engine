@@ -45,8 +45,10 @@ struct Move{
     Non-turn player wants to minimize the amount of distance all non-turn players need combined
 
 */
-SearchResult Search(__uint128_t *board, std::vector<std::vector<int>> *pieces, SearchNode *node);
+SearchResult Search(__uint128_t *board, std::vector<__uint128_t>*pieces, SearchNode node);
 
 float eval(std::vector<std::vector<int>> pieces, int currTurn, int startPlayer);
 
 float moveVal(Move m);
+
+bool operator<(Move m1,Move m2);
