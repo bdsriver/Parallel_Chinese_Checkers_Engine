@@ -2,20 +2,22 @@
 
 #include <cstdint>
 #include <unordered_map>
+#include <utility>
+#include <array>
 #include "board.h"
 
-#define MAX_CACHE 5000
+#define MAX_CACHE 50000
 
 struct TableEntry{
   //This represents the depth of the search performed. If you searched 4 levels after, depth=4
-  int depth;
-  //Best move at this position. Hole (x1,y1) --> Hole (x2,y2)
-  int x1, y1, x2, y2;
-  double eval;
+  uint8_t depth;
+  //Best move at this position
+  std::pair<int,int> bestMove;
   bool valid;
+  float eval;
 
-  TableEntry(int lookupDepth, double evaluation, int _x1, int _y1, int _x2, int _y2) : 
-  depth(lookupDepth), eval(evaluation), x1(_x1), y1(_y1), x2(_x2), y2(_y2) {valid=true;};
+  TableEntry(uint8_t lookupDepth, float evaluation, std::pair<int,int> move) : 
+  depth(lookupDepth), eval(evaluation), bestMove(move) {valid=true;};
   TableEntry(bool isValid) : valid(isValid) {};
   TableEntry() {};
 };
@@ -23,6 +25,7 @@ struct TableEntry{
 class TranspositionTable{
 private:
   std::unordered_map<std::uint64_t, TableEntry> cache;
+  std::array<__uint64_t,MAX_CACHE> hashes = {};
   int cacheSize;
   int maxCacheSize;
 
@@ -40,16 +43,20 @@ public:
 };
 
 
-//6 x 17 x 17
+//6 x 121
 //use this for zobrist hashing
-extern std::uint64_t pieceHashValue[][BOARD_DIM][BOARD_DIM];
+extern std::uint64_t pieceHashValue[][SPACE_AMOUNT];
 
 extern std::uint64_t playerHashValue[];
 
 namespace Hash{
   //must be called per color/player
-  void initPieceVals(int pieceValArr[BOARD_DIM][BOARD_DIM]);
-  void initPlayerVals(int playerValArr[PLAYER_AMOUNT]);
+  void initPieceVals(std::uint64_t pieceValArr[][SPACE_AMOUNT], int numPlayers=6);
+  void initPlayerVals(std::uint64_t playerValArr[PLAYER_AMOUNT]);
+  void hashMove(std::uint64_t* hash,int player, std::pair<int,int> move);
+  void hashTurn(std::uint64_t* hash, int oldPlayer, int newPlayer);
+  //return the hash of the initial game state with it being player 0's turn
+  std::uint64_t initHash(std::vector<__uint128_t> pieces, int playerAmount);
   //Generate a random 64 bit int
   std::uint64_t genRandom();
 }

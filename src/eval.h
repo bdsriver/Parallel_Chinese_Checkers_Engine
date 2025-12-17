@@ -3,6 +3,8 @@
 #include <vector>
 #include <utility>
 #include <deque>
+#include <cstdint>
+#include "transpositionTable.h"
 
 #define MAX_DEPTH 6
 
@@ -25,9 +27,10 @@ struct SearchNode
   float alpha, beta, eval;
   int startPlayer, currTurn;
   int depth;
+  std::uint64_t hash;
 
-  SearchNode(float _a, float _B, float _e, int _startPlayer, int _currTurn, int _depth) :
-  alpha(_a), beta(_B), eval(_e), startPlayer(_startPlayer), currTurn(_currTurn), depth(_depth) {};
+  SearchNode(float _a, float _B, float _e, int _startPlayer, int _currTurn, int _depth, std::uint64_t _hash) :
+  alpha(_a), beta(_B), eval(_e), startPlayer(_startPlayer), currTurn(_currTurn), depth(_depth), hash(_hash) {};
 };
 
 struct Move{
@@ -49,7 +52,7 @@ struct Move{
     Non-turn player wants to minimize the amount of distance all non-turn players need combined
 
 */
-SearchResult Search(__uint128_t *board, std::vector<__uint128_t>*pieces, SearchNode node);
+SearchResult Search(__uint128_t *board, std::vector<__uint128_t>*pieces, SearchNode node, TranspositionTable* table);
 
 float posEval(std::vector<std::vector<int>> pieces, int currTurn, int startPlayer);
 

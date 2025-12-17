@@ -5,8 +5,14 @@
 #include <vector>
 
 
-SearchResult Search(__uint128_t *board, std::vector<__uint128_t>*pieces, SearchNode node){
+SearchResult Search(__uint128_t *board, std::vector<__uint128_t>*pieces, SearchNode node, TranspositionTable* table){
   int numPlayers = PLAYER_AMOUNT;
+  //check table
+  TableEntry t = table->lookup(node.hash,node.depth);
+  if (t.valid){
+    return SearchResult(t.bestMove,t.eval,std::deque<std::pair<int,int>>({t.bestMove}));
+  }
+
   //Did this player start the search?
   bool isStartPlayer = true ? (node.startPlayer == node.currTurn) : false;
   std::vector<std::pair<int,int>> move_spots = generateMoves(*board,(*pieces)[node.currTurn]);
@@ -20,9 +26,10 @@ SearchResult Search(__uint128_t *board, std::vector<__uint128_t>*pieces, SearchN
   std::sort(sorted_moves.begin(),sorted_moves.end());
 
   if (node.depth == 0){
+    float e = node.eval + moveVal(sorted_moves.back());
+    table->insertEntry(node.hash, TableEntry(node.depth,e,sorted_moves.back().move));
     //return optimal eval
-    return SearchResult(sorted_moves.back().move, node.eval + moveVal(sorted_moves.back()),
-    std::deque<std::pair<int,int>>({sorted_moves.back().move}));
+    return SearchResult(sorted_moves.back().move, e, std::deque<std::pair<int,int>>({sorted_moves.back().move}));
   }
   //search all possible moves and prune if possible  
   int searchTurn = node.currTurn;
@@ -35,15 +42,17 @@ SearchResult Search(__uint128_t *board, std::vector<__uint128_t>*pieces, SearchN
     float value = -500.0;
     
     SearchNode n = SearchNode(node.alpha,node.beta,node.eval,node.startPlayer,
-    (node.currTurn+1)%numPlayers,node.depth-1);
+    (node.currTurn+1)%numPlayers,node.depth-1,0);
+    Hash::hashTurn(&n.hash, node.currTurn,n.currTurn);
     while(!sorted_moves.empty() && n.alpha < n.beta){
       Move currMove = sorted_moves.back();
       sorted_moves.pop_back();
       makeMove(board, currMove.move);
       makeMove(&(*pieces)[searchTurn], currMove.move);
+      Hash::hashMove(&n.hash, n.currTurn, currMove.move);
       float m_val = moveVal(currMove);
       n.eval += m_val;
-      SearchResult r = Search(board,pieces,n);
+      SearchResult r = Search(board,pieces,n,table);
       if (r.eval > value){
         value = r.eval;
         bestMove = currMove;
@@ -52,9 +61,11 @@ SearchResult Search(__uint128_t *board, std::vector<__uint128_t>*pieces, SearchN
       n.alpha = std::max(n.alpha, value);
       unMakeMove(board, currMove.move);
       unMakeMove(&(*pieces)[searchTurn], currMove.move);
+      Hash::hashMove(&n.hash, n.currTurn, currMove.move);
       n.eval -= m_val;
     }
     bestHist.push_front(bestMove.move);
+    table ->insertEntry(node.hash,TableEntry(node.depth,value,bestMove.move));
     return SearchResult(bestMove.move,value,bestHist);    
   }
   else{//min node
@@ -62,15 +73,17 @@ SearchResult Search(__uint128_t *board, std::vector<__uint128_t>*pieces, SearchN
     std::deque<std::pair<int,int>> bestHist;
     float value = 500.0;
     SearchNode n = SearchNode(node.alpha,node.beta,node.eval,node.startPlayer,
-    (node.currTurn+1)%numPlayers,node.depth-1);
+    (node.currTurn+1)%numPlayers,node.depth-1,0);
+    Hash::hashTurn(&n.hash, node.currTurn,n.currTurn);
     while(!sorted_moves.empty() && n.beta > n.alpha){
       Move currMove = sorted_moves.back();
       sorted_moves.pop_back();
       makeMove(board, currMove.move);
       makeMove(&(*pieces)[searchTurn], currMove.move);
+      Hash::hashMove(&n.hash, n.currTurn, currMove.move);
       float m_val = moveVal(currMove);
       n.eval += m_val;
-      SearchResult r = Search(board,pieces,n);
+      SearchResult r = Search(board,pieces,n,table);
       if (r.eval < value){
         value = r.eval;
         bestMove = currMove;
@@ -79,8 +92,10 @@ SearchResult Search(__uint128_t *board, std::vector<__uint128_t>*pieces, SearchN
       n.beta = std::min(n.beta, value);
       unMakeMove(board, currMove.move);
       unMakeMove(&(*pieces)[searchTurn], currMove.move);
+      Hash::hashMove(&n.hash, n.currTurn, currMove.move);
       n.eval -= m_val;
     }
+    table ->insertEntry(node.hash,TableEntry(node.depth,value,bestMove.move));
     bestHist.push_front(bestMove.move);
     return SearchResult(bestMove.move,value,bestHist);
   }
