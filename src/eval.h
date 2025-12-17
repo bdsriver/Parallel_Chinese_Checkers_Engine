@@ -15,9 +15,11 @@ struct SearchResult{
   std::pair<int,int> bestMove;
   //history of moves with next best move at front
   std::deque<std::pair<int,int>> hist;
+  bool end;
 
   SearchResult(std::pair<int,int> _move, float _eval, std::deque<std::pair<int,int>> _hist) : 
-  bestMove(_move), eval(_eval), hist(_hist) {};
+  bestMove(_move), eval(_eval), hist(_hist) {end=false;};
+  SearchResult(bool _win) : end(_win) {};
 };
 
 // currturn corresponds to the player whose turn it is to move. Assume 0 goes, then 1, then 2...

@@ -5,6 +5,7 @@
 #include <functional>
 #include <stdio.h>
 #include <deque>
+#include <algorithm>
 
 
 //must call setMovesAndJumps() to initiallize this
@@ -243,6 +244,9 @@ void setMovesAndJumps(){
   for (int i=0; i<PLAYER_AMOUNT; i++){
     djikstra(i);
   }
+  for (int i=0; i<PLAYER_AMOUNT; i++){
+    std::sort(endZones[i].begin(), endZones[i].end());
+  }
 
 }
 
@@ -275,7 +279,7 @@ void printBoard(char board[][17]) {
   }
 }
 
-std::vector<std::pair<int,int>> generateMoves(__uint128_t occupied, __uint128_t pieces){
+std::vector<std::pair<int,int>> generateMoves(__uint128_t occupied, __uint128_t pieces, int player){
   std::vector<std::pair<int,int>> possibleMoves;
 
   auto setBit = [](__uint128_t n, int bit) -> __uint128_t {
@@ -290,6 +294,7 @@ std::vector<std::pair<int,int>> generateMoves(__uint128_t occupied, __uint128_t 
   
   //Generate one-space moves
   __uint128_t temp = pieces;
+  std::vector<int> pieceLocations;
   for (int i=0; i<PLAYER_PIECE_AMOUNT; i++){
     int startPos = 0;
     if((__uint64_t)temp){
@@ -298,6 +303,7 @@ std::vector<std::pair<int,int>> generateMoves(__uint128_t occupied, __uint128_t 
     else{
       startPos = __builtin_ctzll((uint64_t)(temp >> 64)) + 64;
     }
+    pieceLocations.push_back(startPos);
     temp &= temp -1;
 
     __uint128_t pieceMoves = moves[startPos] & (~occupied);
@@ -315,6 +321,10 @@ std::vector<std::pair<int,int>> generateMoves(__uint128_t occupied, __uint128_t 
       high &= high-1;
       possibleMoves.push_back(std::pair<int,int>(startPos,trailing_zeros+64));//add 64 for high address
     }
+  }
+  //if all pieces are in the end zone, you win, no moves to make
+  if (pieceLocations == endZones[player]){
+    return {};
   }
 
   //Generate jumps with DFS

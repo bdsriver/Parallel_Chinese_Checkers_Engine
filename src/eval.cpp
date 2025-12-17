@@ -15,7 +15,11 @@ SearchResult Search(__uint128_t *board, std::vector<__uint128_t>*pieces, SearchN
 
   //Did this player start the search?
   bool isStartPlayer = true ? (node.startPlayer == node.currTurn) : false;
-  std::vector<std::pair<int,int>> move_spots = generateMoves(*board,(*pieces)[node.currTurn]);
+  std::vector<std::pair<int,int>> move_spots = generateMoves(*board,(*pieces)[node.currTurn],node.currTurn);
+  if (move_spots.empty()){
+    //this means this is a winning position
+    return SearchResult(true);
+  }
   std::vector<Move> sorted_moves;
 
   for (std::pair<int,int> m: move_spots){
@@ -53,15 +57,19 @@ SearchResult Search(__uint128_t *board, std::vector<__uint128_t>*pieces, SearchN
       float m_val = moveVal(currMove);
       n.eval += m_val;
       SearchResult r = Search(board,pieces,n,table);
+      unMakeMove(board, currMove.move);
+      unMakeMove(&(*pieces)[searchTurn], currMove.move);
+      Hash::hashMove(&n.hash, n.currTurn, currMove.move);
+      if (r.end){
+        return SearchResult(currMove.move,500,std::deque<std::pair<int,int>>({currMove.move}));
+      }
       if (r.eval > value){
         value = r.eval;
         bestMove = currMove;
         bestHist = r.hist;
       }
       n.alpha = std::max(n.alpha, value);
-      unMakeMove(board, currMove.move);
-      unMakeMove(&(*pieces)[searchTurn], currMove.move);
-      Hash::hashMove(&n.hash, n.currTurn, currMove.move);
+      
       n.eval -= m_val;
     }
     bestHist.push_front(bestMove.move);
@@ -84,15 +92,18 @@ SearchResult Search(__uint128_t *board, std::vector<__uint128_t>*pieces, SearchN
       float m_val = moveVal(currMove);
       n.eval += m_val;
       SearchResult r = Search(board,pieces,n,table);
+      unMakeMove(board, currMove.move);
+      unMakeMove(&(*pieces)[searchTurn], currMove.move);
+      Hash::hashMove(&n.hash, n.currTurn, currMove.move);
+      if (r.end){
+        return SearchResult(currMove.move,500,std::deque<std::pair<int,int>>({currMove.move}));
+      }
       if (r.eval < value){
         value = r.eval;
         bestMove = currMove;
         bestHist = r.hist;
       }
       n.beta = std::min(n.beta, value);
-      unMakeMove(board, currMove.move);
-      unMakeMove(&(*pieces)[searchTurn], currMove.move);
-      Hash::hashMove(&n.hash, n.currTurn, currMove.move);
       n.eval -= m_val;
     }
     table ->insertEntry(node.hash,TableEntry(node.depth,value,bestMove.move));
