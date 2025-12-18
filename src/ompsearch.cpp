@@ -17,7 +17,6 @@ SearchResult ompSearch(__uint128_t occupied, std::vector<__uint128_t> pieces,
   
   #pragma omp parallel num_threads(threadAmount) shared(t)
   {
-    // These are private (declared inside parallel region)
     __uint128_t occ_copy = occupied;
     std::vector<__uint128_t> pieces_copy = pieces;
     
