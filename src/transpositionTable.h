@@ -24,7 +24,7 @@ struct TableEntry{
 };
 
 class TranspositionTable{
-private:
+protected:
   std::unordered_map<std::uint64_t, TableEntry> cache;
   std::array<__uint64_t,MAX_CACHE> hashes = {};
   int cacheSize;

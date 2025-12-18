@@ -49,11 +49,11 @@ int main(){
     double timeThread = std::chrono::duration<double>(end - start).count();
     
     //measure this function
-    //start = std::chrono::high_resolution_clock::now();
-    //s = ompSearch(occupied,pieces,startEval,depth,0);
-    //end = std::chrono::high_resolution_clock::now();
-    //elapsed = end - start;
-    //timeOMP = std::chrono::duration<double>(end - start).count();
+    start = std::chrono::high_resolution_clock::now();
+    s = ompSearch(occupied,pieces,startEval,depth,0);
+    end = std::chrono::high_resolution_clock::now();
+    elapsed = end - start;
+    double timeOMP = std::chrono::duration<double>(end - start).count();
 
     csvFile << depth << "," << timeSearch << "," << timeThread << "," << timeOMP << "\n";
   }
