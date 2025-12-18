@@ -1,94 +1,43 @@
 import csv
 import matplotlib.pyplot as plt
 
-# CSV files and corresponding number of CPU cores
 files = {
-    "new_results1.csv": 1,
-    "new_results8.csv": 8,
+    "OLD Depth vs Time (1 Core)": ("timing_results1.csv", "depth_time_1_core_old.png"),
+    "OLD Depth vs Time (8 Cores)": ("timing_results8.csv", "depth_time_8_core_old.png"),
+    "Depth vs Time (8 Cores)": ("new_results8.csv", "depth_time_8_core_new.png"),
 }
 
-depths = {}
-speedup = {}
-efficiency = {}
-speedup_omp = {}
-efficiency_omp = {}
-
-# Read data from CSV files
-for filename, cores in files.items():
-    d = []
-    s_thread = []
-    e_thread = []
-    s_omp = []
-    e_omp = []
+for title, (filename, output_png) in files.items():
+    depth = []
+    seq = []
+    thread = []
+    omp = []
 
     with open(filename, "r") as f:
         reader = csv.DictReader(f)
         for row in reader:
-            depth = int(row["Depth"])
-            t_seq = float(row["Search"])
-            t_thread = float(row["ThreadSearch"])
-            t_omp = float(row["OMPSearch"])
+            depth.append(int(row["Depth"]))
+            seq.append(float(row["Search"]))
+            thread.append(float(row["ThreadSearch"]))
+            omp.append(float(row["OMPSearch"]))
 
-            # Speedup
-            sp_thread = t_seq / t_thread
-            sp_omp = t_seq / t_omp
+    plt.figure()
+    plt.plot(depth, seq, label="Sequential")
+    plt.plot(depth, thread, label="Threads")
+    plt.plot(depth, omp, label="OpenMP")
 
-            # Efficiency
-            ef_thread = sp_thread / cores
-            ef_omp = sp_omp / cores
+    plt.xlabel("Depth")
+    plt.ylabel("Time (seconds)")
+    plt.title(title)
+    plt.grid(True)
 
-            d.append(depth)
-            s_thread.append(sp_thread)
-            e_thread.append(ef_thread)
-            s_omp.append(sp_omp)
-            e_omp.append(ef_omp)
+    plt.legend(
+        fontsize=8,
+        framealpha=0.8,
+        borderpad=0.3,
+        labelspacing=0.3,
+    )
 
-    depths[cores] = d
-    speedup[cores] = s_thread
-    efficiency[cores] = e_thread
-    speedup_omp[cores] = s_omp
-    efficiency_omp[cores] = e_omp
-
-plt.figure()
-for threads in files.values():
-    plt.plot(depths[threads], speedup[threads],
-             label=f"ThreadSearch ({threads})")
-
-for threads in files.values():
-    plt.plot(depths[threads], speedup_omp[threads],
-             linestyle="--",
-             label=f"OMPSearch ({threads})")
-
-plt.xlabel("Depth")
-plt.ylabel("Speedup")
-plt.title("Speedup vs Depth")
-plt.grid(True)
-plt.legend(loc="lower right")
-plt.savefig("speedup.png", dpi=300)
-plt.close()
-
-plt.figure()
-for threads in files.values():
-    plt.plot(depths[threads], efficiency[threads],
-             label=f"ThreadSearch ({threads})")
-
-for threads in files.values():
-    plt.plot(depths[threads], efficiency_omp[threads],
-             linestyle="--",
-             label=f"OMPSearch ({threads})")
-
-plt.xlabel("Depth")
-plt.ylabel("Efficiency")
-plt.title("Efficiency vs Depth")
-plt.grid(True)
-plt.legend(
-    loc="upper left",
-    fontsize=8,
-    framealpha=0.7,
-    borderpad=0.2,
-    labelspacing=0.2,
-    handlelength=1.4,
-)
-plt.tight_layout(rect=[0, 0, 0.8, 1])
-plt.savefig("efficiency.png", dpi=300)
-plt.close()
+    plt.tight_layout()
+    plt.savefig(output_png, dpi=300)
+    plt.close()
