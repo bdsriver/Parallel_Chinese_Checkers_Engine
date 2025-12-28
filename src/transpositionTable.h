@@ -60,7 +60,7 @@ extern std::uint64_t playerHashValue[];
 namespace Hash{
   //must be called per color/player
   void initPieceVals(std::uint64_t pieceValArr[][SPACE_AMOUNT], int numPlayers=6);
-  void initPlayerVals(std::uint64_t playerValArr[PLAYER_AMOUNT]);
+  void initPlayerVals(std::uint64_t playerValArr[MAX_PLAYER_AMOUNT]);
   void hashMove(std::uint64_t* hash,int player, std::pair<int,int> move);
   void hashTurn(std::uint64_t* hash, int oldPlayer, int newPlayer);
   //return the hash of the initial game state with it being player 0's turn

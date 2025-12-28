@@ -2,15 +2,14 @@
 #include "board.h"
 #include <random>
 #include <cstdint>
-#include <mutex>
 
-std::uint64_t pieceHashValue[PLAYER_AMOUNT][SPACE_AMOUNT];
+std::uint64_t pieceHashValue[MAX_PLAYER_AMOUNT][SPACE_AMOUNT];
 
-std::uint64_t playerHashValue[PLAYER_AMOUNT];
+std::uint64_t playerHashValue[MAX_PLAYER_AMOUNT];
 
 namespace Hash{
-  void initPlayerVals(std::uint64_t playerValArr[PLAYER_AMOUNT]){
-    for(int i=0;i<PLAYER_AMOUNT;i++){
+  void initPlayerVals(std::uint64_t playerValArr[MAX_PLAYER_AMOUNT]){
+    for(int i=0;i<MAX_PLAYER_AMOUNT;i++){
       playerValArr[i] = genRandom();
     }
   }
@@ -82,22 +81,6 @@ void TranspositionTable::insertEntry(std::uint64_t hash, TableEntry t){
     table[index] = t;
   }/*
   TODO: Change this to buckets
-  else {
-    //pick 3 random entries and kick one out
-    int entries[3] = {rand()%maxCacheSize, rand()%maxCacheSize, rand()%maxCacheSize};
-    int kickedOut = 0;
-    int lowestDepth = cache[hashes[entries[0]]].depth;
-    for (int i=1; i<3; i++){
-      uint8_t d = cache[hashes[entries[i]]].depth;
-      if (lowestDepth > d){
-        kickedOut = i;
-        lowestDepth = d;
-      }
-    }
-    cache.erase(hashes[entries[kickedOut]]);
-    hashes[entries[kickedOut]] = hash;
-    cache[hash] = t;
-  }
   */
   return;  
 }

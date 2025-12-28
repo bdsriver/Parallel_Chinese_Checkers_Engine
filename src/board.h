@@ -5,11 +5,13 @@
 #include <utility>
 #include <vector>
 
-#define PLAYER_AMOUNT 6
+#define MAX_PLAYER_AMOUNT 6
 #define BOARD_DIM 17
 #define PLAYER_PIECE_AMOUNT 10
 #define SPACE_AMOUNT 121
 
+//Amount of players in the current game
+extern int playersInGame;
 //access space (x,y) with startBoard[y][x]
 extern char startBoard[][BOARD_DIM];
 //access space (x,y) with inBounds[y][x]
@@ -31,7 +33,7 @@ extern std::vector<std::vector<int>> endZones;
 
 //refer to diagram for mapping explanation
 //must be called to set the global moves,pieces, and jumps tables
-void setMovesAndJumps();
+void setMovesAndJumps(int playerAmount=6);
 
 //copy the original onto the copy
 void copyBoard(char original[][BOARD_DIM], char copy[][BOARD_DIM]);

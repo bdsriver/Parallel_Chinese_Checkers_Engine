@@ -9,7 +9,7 @@ SearchResult threadSearch(__uint128_t occupied, std::vector<__uint128_t> pieces,
   float currEval, int depth, int turnPlayer){
   
   TranspositionTable t = TranspositionTable();
-  std::uint64_t hash = Hash::initHash(pieces, PLAYER_AMOUNT);
+  std::uint64_t hash = Hash::initHash(pieces, playersInGame);
   
   int threadAmount = std::thread::hardware_concurrency();
   std::vector<std::thread> threads;

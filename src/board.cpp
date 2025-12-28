@@ -7,6 +7,7 @@
 #include <deque>
 #include <algorithm>
 
+int playersInGame;
 
 //must call setMovesAndJumps() to initiallize this
 //key: position(0-121) value: bitboard (set to 1 at valid move location)
@@ -18,7 +19,10 @@ std::vector<__uint128_t> jumps;
 std::vector<std::unordered_map<int,int>> halfJumps;
 //initiallized in setMovesAndJumps()
 std::vector<std::vector<float>> pieceValues;
+//changed during runtime
 std::vector<std::vector<int>> startPoints;
+//changed during runtime
+std::vector<std::vector<int>> endZones;
 
 
 // '<int>' is the player's pieces
@@ -43,8 +47,8 @@ char startBoard[BOARD_DIM][BOARD_DIM] = {
   {' ',' ',' ',' ', 3 ,' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' '}
 };
 
-//changed during runtime
-std::vector<std::vector<int>> endZones = {
+//used to construct startPoints and endZones, not currently in header
+std::vector<std::vector<int>> defaultStartPoints = {
   {6,7,8,9,0,1,2,3,4,5},
   {19,32,44,55,20,21,22,33,34,45},
   {74,84,95,107,85,96,97,108,109,110},
@@ -119,7 +123,8 @@ std::unordered_map <int, std::pair<int,int>> bitToIndices = {
 };
 
 //refer to diagram for mapping explanation
-void setMovesAndJumps(){
+void setMovesAndJumps(int playerAmount){
+  playersInGame = playerAmount;
   auto isInBounds = [](int x, int y) -> bool {
     return x>=0 && y>=0 && x<BOARD_DIM && y<BOARD_DIM && inBounds[y][x];
   };
@@ -177,23 +182,36 @@ void setMovesAndJumps(){
 
   }
 
-  if (PLAYER_AMOUNT == 6){
-    startPoints = endZones;
-    std::vector<std::vector<int>> temp = endZones;
-    endZones[0] = temp[3];
-    endZones[1] = temp[4];
-    endZones[2] = temp[5];
-    endZones[3] = temp[0];
-    endZones[4] = temp[1];
-    endZones[5] = temp[2];
+  if (playersInGame == 2){
+    std::vector<std::vector<int>> temp = defaultStartPoints;
+    startPoints = {temp[0],temp[3]};
+    endZones = {temp[3],temp[0]};
   }
+  else if (playersInGame == 3){
+    std::vector<std::vector<int>> temp = defaultStartPoints;
+    startPoints = {temp[0],temp[2],temp[4]};
+    endZones = {temp[3],temp[5],temp[1]};
+  }
+  else if (playersInGame == 4){
+    std::vector<std::vector<int>> temp = defaultStartPoints;
+    startPoints = {temp[0],temp[1],temp[3],temp[4]};
+    endZones = {temp[3],temp[4],temp[0],temp[1]};
+  }
+  else //if (playersInGame == 6)
+  {
+    std::vector<std::vector<int>> temp = defaultStartPoints;
+    startPoints = defaultStartPoints;
+    endZones = {temp[3],temp[4],temp[5],temp[0],temp[1],temp[2]};
+  }
+
 
   //use djikstra's to set piece table by measuring distance from end
   // we start with all spaces unexplored and set to max value except the starting spaces
   // we can use a normal queue instead of priority queue because there is 1 unit between each adjacent space
   std::vector<std::deque<int>> queue;
   std::vector<__uint128_t> explored;
-  for (int i=0;i<PLAYER_AMOUNT;i++){
+  pieceValues = {};
+  for (int i=0 ; i<playersInGame; i++){
     pieceValues.push_back({});
     for (int j=0; j<SPACE_AMOUNT; j++){
       pieceValues[i].push_back(248);
@@ -241,10 +259,10 @@ void setMovesAndJumps(){
     }
   };//end djikstra definition
   
-  for (int i=0; i<PLAYER_AMOUNT; i++){
+  for (int i=0; i<playersInGame; i++){
     djikstra(i);
   }
-  for (int i=0; i<PLAYER_AMOUNT; i++){
+  for (int i=0; i<playersInGame; i++){
     std::sort(endZones[i].begin(), endZones[i].end());
   }
 

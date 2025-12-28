@@ -3,10 +3,10 @@
 #include <algorithm>
 #include <deque>
 #include <vector>
+#include <iostream>
 
 
 SearchResult Search(__uint128_t *board, std::vector<__uint128_t>*pieces, SearchNode node, TranspositionTable* table){
-  int numPlayers = PLAYER_AMOUNT;
   //check table
   TableEntry t = table->lookup(node.hash,node.depth);
   if (t.valid){
@@ -46,20 +46,20 @@ SearchResult Search(__uint128_t *board, std::vector<__uint128_t>*pieces, SearchN
     float value = -500.0;
     
     SearchNode n = SearchNode(node.alpha,node.beta,node.eval,node.startPlayer,
-    (node.currTurn+1)%numPlayers,node.depth-1,0);
+    (node.currTurn+1)%playersInGame,node.depth-1,node.hash);
     Hash::hashTurn(&n.hash, node.currTurn,n.currTurn);
     while(!sorted_moves.empty() && n.alpha < n.beta){
       Move currMove = sorted_moves.back();
       sorted_moves.pop_back();
       makeMove(board, currMove.move);
       makeMove(&(*pieces)[searchTurn], currMove.move);
-      Hash::hashMove(&n.hash, n.currTurn, currMove.move);
+      Hash::hashMove(&n.hash, searchTurn, currMove.move);
       float m_val = moveVal(currMove);
       n.eval += m_val;
       SearchResult r = Search(board,pieces,n,table);
       unMakeMove(board, currMove.move);
       unMakeMove(&(*pieces)[searchTurn], currMove.move);
-      Hash::hashMove(&n.hash, n.currTurn, currMove.move);
+      Hash::hashMove(&n.hash, searchTurn, currMove.move);
       if (r.end){
         return SearchResult(currMove.move,500,std::deque<std::pair<int,int>>({currMove.move}));
       }
@@ -81,20 +81,20 @@ SearchResult Search(__uint128_t *board, std::vector<__uint128_t>*pieces, SearchN
     std::deque<std::pair<int,int>> bestHist;
     float value = 500.0;
     SearchNode n = SearchNode(node.alpha,node.beta,node.eval,node.startPlayer,
-    (node.currTurn+1)%numPlayers,node.depth-1,0);
+    (node.currTurn+1)%playersInGame,node.depth-1,node.hash);
     Hash::hashTurn(&n.hash, node.currTurn,n.currTurn);
     while(!sorted_moves.empty() && n.beta > n.alpha){
       Move currMove = sorted_moves.back();
       sorted_moves.pop_back();
       makeMove(board, currMove.move);
       makeMove(&(*pieces)[searchTurn], currMove.move);
-      Hash::hashMove(&n.hash, n.currTurn, currMove.move);
+      Hash::hashMove(&n.hash, searchTurn, currMove.move);
       float m_val = moveVal(currMove);
       n.eval += m_val;
       SearchResult r = Search(board,pieces,n,table);
       unMakeMove(board, currMove.move);
       unMakeMove(&(*pieces)[searchTurn], currMove.move);
-      Hash::hashMove(&n.hash, n.currTurn, currMove.move);
+      Hash::hashMove(&n.hash, searchTurn, currMove.move);
       if (r.end){
         return SearchResult(currMove.move,500,std::deque<std::pair<int,int>>({currMove.move}));
       }
@@ -114,13 +114,12 @@ SearchResult Search(__uint128_t *board, std::vector<__uint128_t>*pieces, SearchN
 }
 
 float posEval(std::vector<std::vector<int>> pieces, int currTurn, int startPlayer){
-  int numPlayers = PLAYER_AMOUNT;
   float total = 0;
-  for (int i=0;i<numPlayers; i++){
+  for (int i=0;i<playersInGame; i++){
     float subtotal = 0;
     for (int p:pieces[i]){
       float val = pieceValues[i][p];
-      val = (i==startPlayer) ? val : (-val) / (float)(numPlayers-1);
+      val = (i==startPlayer) ? val : (-val) / (float)(playersInGame-1);
       subtotal += val;
     }
     total += subtotal;
@@ -134,7 +133,7 @@ float moveVal(Move m){
   val += pieceValues[m.playerNum][m.move.first];
   val -= pieceValues[m.playerNum][m.move.second];
   if (!m.isStartPlayer){
-    val = val / (- (PLAYER_AMOUNT-1));
+    val = val / (- (playersInGame-1));
   }
   return val;
 }
