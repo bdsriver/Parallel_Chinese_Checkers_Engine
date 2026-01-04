@@ -9,6 +9,7 @@
 #define BOARD_DIM 17
 #define PLAYER_PIECE_AMOUNT 10
 #define SPACE_AMOUNT 121
+#define MAX_MOVES 250
 
 //Amount of players in the current game
 extern int playersInGame;
@@ -17,8 +18,8 @@ extern char startBoard[][BOARD_DIM];
 //access space (x,y) with inBounds[y][x]
 extern bool inBounds[][BOARD_DIM];
 extern std::unordered_map<int, std::pair<int,int>> bitToIndices;
-extern std::vector<__uint128_t> moves;
-extern std::vector<__uint128_t> jumps;
+extern __uint128_t moves[SPACE_AMOUNT];
+extern __uint128_t jumps[SPACE_AMOUNT];
 //mapping of the location of the end of the jump to the location of the intermediate space
 extern std::vector<std::unordered_map<int,int>> halfJumps;
 //piece table value per space
@@ -38,10 +39,11 @@ void setMovesAndJumps(int playerAmount=6);
 //copy the original onto the copy
 void copyBoard(char original[][BOARD_DIM], char copy[][BOARD_DIM]);
 
-//return a vector of {space1, space2} pairs
+//return the amount of moves generated into the moveArr array
 //occupied is a bitboard of piece locations on the board
-//pieces is a map of {<0-9>,<piece location>} for the player's piece
-std::vector<std::pair<int,int>> generateMoves( __uint128_t occupied, __uint128_t pieces, int player);
+//pieces is a bitboard of only the turn player's piece
+//return -1 if it is a winning position
+int generateMoves(std::pair<int,int> moveArr[MAX_MOVES] ,__uint128_t occupied, __uint128_t pieces, int player);
 
 // return a vector with the locations of each piece
 std::vector<int> initPieces(char board[][BOARD_DIM], char playerID);

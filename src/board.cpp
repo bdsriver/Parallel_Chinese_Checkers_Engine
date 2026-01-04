@@ -11,11 +11,11 @@ int playersInGame;
 
 //must call setMovesAndJumps() to initiallize this
 //key: position(0-121) value: bitboard (set to 1 at valid move location)
-std::vector<__uint128_t> moves;
+__uint128_t moves[SPACE_AMOUNT];
 
 //must call setMovesAndJumps() to initiallize this
 //key: position(0-121) value: bitboard (set to 1 at valid jump location)
-std::vector<__uint128_t> jumps;
+__uint128_t jumps[SPACE_AMOUNT];
 std::vector<std::unordered_map<int,int>> halfJumps;
 //initiallized in setMovesAndJumps()
 std::vector<std::vector<float>> pieceValues;
@@ -172,13 +172,13 @@ void setMovesAndJumps(int playerAmount){
     for (auto m:moves_possible){
       bitboard = setBit(bitboard,m);
     }
-    moves.push_back(bitboard);
+    moves[i] = bitboard;
 
     __uint128_t bitboard2 = 0;
     for (auto j:jumps_possible){
       bitboard2 = setBit(bitboard2,j);
     }
-    jumps.push_back(bitboard2);
+    jumps[i] = bitboard2;
 
   }
 
@@ -297,8 +297,8 @@ void printBoard(char board[][17]) {
   }
 }
 
-std::vector<std::pair<int,int>> generateMoves(__uint128_t occupied, __uint128_t pieces, int player){
-  std::vector<std::pair<int,int>> possibleMoves;
+int generateMoves(std::pair<int,int> moveArr[MAX_MOVES],__uint128_t occupied, __uint128_t pieces, int player){
+  int moveAmount = 0;
 
   auto setBit = [](__uint128_t n, int bit) -> __uint128_t {
     return (n | ((__uint128_t)1 << bit));
@@ -312,7 +312,7 @@ std::vector<std::pair<int,int>> generateMoves(__uint128_t occupied, __uint128_t 
   
   //Generate one-space moves
   __uint128_t temp = pieces;
-  std::vector<int> pieceLocations;
+  int pieceLocations[PLAYER_PIECE_AMOUNT];
   for (int i=0; i<PLAYER_PIECE_AMOUNT; i++){
     int startPos = 0;
     if((__uint64_t)temp){
@@ -321,7 +321,7 @@ std::vector<std::pair<int,int>> generateMoves(__uint128_t occupied, __uint128_t 
     else{
       startPos = __builtin_ctzll((uint64_t)(temp >> 64)) + 64;
     }
-    pieceLocations.push_back(startPos);
+    pieceLocations[i] = startPos;
     temp &= temp -1;
 
     __uint128_t pieceMoves = moves[startPos] & (~occupied);
@@ -332,17 +332,26 @@ std::vector<std::pair<int,int>> generateMoves(__uint128_t occupied, __uint128_t 
     while (low){
       int trailing_zeros = __builtin_ctzll(low);//supported by gcc
       low &= low-1; //clear that set bit
-      possibleMoves.push_back(std::pair<int,int>(startPos,trailing_zeros));
+      moveArr[moveAmount] = std::pair<int,int>(startPos,trailing_zeros);
+      moveAmount++;
     }
     while (high){
-      int trailing_zeros = __builtin_ctzll(high);
+      int trailing_zeros = __builtin_ctzll(high) + 64;//add 64 for high register
       high &= high-1;
-      possibleMoves.push_back(std::pair<int,int>(startPos,trailing_zeros+64));//add 64 for high address
+      moveArr[moveAmount] = std::pair<int,int>(startPos,trailing_zeros);
+      moveAmount++;
     }
   }
   //if all pieces are in the end zone, you win, no moves to make
-  if (pieceLocations == endZones[player]){
-    return {};
+  bool inEndZone = true;
+  for (int i=0; i<PLAYER_PIECE_AMOUNT; i++){
+    if (pieceLocations[i] != endZones[player][i]){
+      inEndZone = false;
+      break;
+    }
+  }
+  if(inEndZone){
+    return -1;
   }
 
   //Generate jumps with DFS
@@ -357,17 +366,16 @@ std::vector<std::pair<int,int>> generateMoves(__uint128_t occupied, __uint128_t 
       startPos = __builtin_ctzll((uint64_t)(temp >> 64)) + 64;
     }
     temp &= temp-1;
-    std::vector<int> jumpPoints = {startPos};
+    int jumpPoints[25];
+    jumpPoints[0] = startPos;
+    int back = 0;
     // "hashmap" to check if we already jumped to a spot
-    __uint128_t jumpedTo = 0;
+    __uint128_t jumpedTo = 0; 
 
 
-    std::function<void()> DFS = [&]() -> void {
-      if (jumpPoints.empty()){
-        return;
-      }
-      int startSpace = jumpPoints.back();
-      jumpPoints.pop_back();
+    while (back >= 0) {
+      int startSpace = jumpPoints[back];
+      back--;
       //set the hash
       jumpedTo = setBit(jumpedTo,startSpace);
 
@@ -380,8 +388,10 @@ std::vector<std::pair<int,int>> generateMoves(__uint128_t occupied, __uint128_t 
         int trailing_zeros = __builtin_ctzll(low);
         low &= low-1;
         if (bitIsSet(occupied,halfJumps[startSpace][trailing_zeros])  && bitIsSet(~jumpedTo,trailing_zeros)){
-          possibleMoves.push_back(std::pair<int,int>(startPos,trailing_zeros));
-          jumpPoints.push_back(trailing_zeros);
+          moveArr[moveAmount] = std::pair<int,int>(startPos,trailing_zeros);
+          moveAmount++;
+          back++;
+          jumpPoints[back] = trailing_zeros;
         }        
       }
       while (high){
@@ -389,18 +399,17 @@ std::vector<std::pair<int,int>> generateMoves(__uint128_t occupied, __uint128_t 
         high &= high-1;
         //check that there is a piece to jump over && we have not visited the landing space on our search
         if (bitIsSet(occupied,halfJumps[startSpace][trailing_zeros]) && bitIsSet(~jumpedTo,trailing_zeros)){
-          possibleMoves.push_back(std::pair<int,int>(startPos,trailing_zeros));
-          jumpPoints.push_back(trailing_zeros);
+          moveArr[moveAmount] = std::pair<int,int>(startPos,trailing_zeros);
+          moveAmount++;
+          back++;
+          jumpPoints[back] = trailing_zeros;
         }
       }
-      DFS();
-    };//end DFS definition
-
-    DFS();
+    }//end while loop
   }//end iteration i
 
 
-  return possibleMoves;
+  return moveAmount;
 }
 
 std::vector<int> initPieces(char board[][BOARD_DIM], char playerID){

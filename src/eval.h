@@ -14,11 +14,10 @@ struct SearchResult{
   //best move at the position
   std::pair<int,int> bestMove;
   //history of moves with next best move at front
-  std::deque<std::pair<int,int>> hist;
   bool end;
 
-  SearchResult(std::pair<int,int> _move, float _eval, std::deque<std::pair<int,int>> _hist) : 
-  bestMove(_move), eval(_eval), hist(_hist) {end=false;};
+  SearchResult(std::pair<int,int> _move, float _eval) : 
+  bestMove(_move), eval(_eval) {end=false;};
   SearchResult(bool _win) : end(_win) {};
 };
 
@@ -42,6 +41,7 @@ struct Move{
 
   Move(std::pair<int,int> _move, bool _isStartPlayer, int _playerNum) :
   move(_move), isStartPlayer(_isStartPlayer), playerNum(_playerNum) {};
+  Move() {};
 };
 
 
