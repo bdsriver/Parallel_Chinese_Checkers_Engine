@@ -11,14 +11,13 @@
 
 int main(){
   srand(time(nullptr));
-  setMovesAndJumps();
+  setMovesAndJumps(2);
   Hash::initPieceVals(pieceHashValue);
   Hash::initPlayerVals(playerHashValue);
-  __uint128_t occupied = boardToOccupiedBitboard(startBoard);
+  __uint128_t occupied = pieceVectorToBoard(startPoints);
   std::vector<__uint128_t> pieces = pieceVectorToBitboards(startPoints);
   std::uint64_t hash = Hash::initHash(pieces,playersInGame);
-  //printBoard(startBoard);
-  float startEval = posEval(startPoints, 0,0);
+  float startEval = posEval(pieces, 0);
   
   TranspositionTable t = TranspositionTable();
   int depth = 6;
@@ -33,22 +32,42 @@ int main(){
   double timeSearch = std::chrono::duration<double>(end - start).count();
   std::cout << "result: " << s.bestMove.first << ',' << s.bestMove.second << ": " << s.eval << std::endl;
   std::cout << "sequential: "<< timeSearch << std::endl;
-  /*
+
   start = std::chrono::high_resolution_clock::now();
-  s = threadSearch(occupied,pieces,startEval,depth,0);
+  SearchNode n(-500,500,startEval,0,0,4,hash);
+  t = TranspositionTable();
+  s = ignorantSearch(&occupied,&pieces[0],n,&t);
   end = std::chrono::high_resolution_clock::now();
   elapsed = end - start;
   timeSearch = std::chrono::duration<double>(end - start).count();
-  std::cout << "threads: "<< timeSearch << std::endl;
-
-
-  start = std::chrono::high_resolution_clock::now();
-  s = ompSearch(occupied,pieces,startEval,depth,0);
-  end = std::chrono::high_resolution_clock::now();
-  elapsed = end - start;
-  timeSearch = std::chrono::duration<double>(end - start).count();
-  std::cout << "omp: "<< timeSearch << std::endl;
-  */
-
+  std::cout << "result: " << s.bestMove.first << ',' << s.bestMove.second <<std::endl;
+  std::cout << "ignorant: "<< timeSearch << std::endl;
+  
+  depth = 3;
+  bool ended[6] = {false,false,false,false,false,false};
+  for(int i=0; i<400; i++){
+    int curr = i%playersInGame;
+    if (ended[curr]){
+      continue;
+    }
+    float ev = posEval(pieces,curr);
+    t = TranspositionTable();
+    s = ignorantSearch(&occupied, &pieces[curr], SearchNode(-500,500,ev,curr,curr,depth,hash),&t);
+    if (s.end){
+      ended[curr] = true;
+      continue;
+    }
+    makeMove(&occupied,s.bestMove);
+    makeMove(&pieces[curr],s.bestMove);
+    Hash::hashMove(&hash, curr, s.bestMove);
+    Hash::hashTurn(&hash, curr, (curr+1)%playersInGame);
+    printBitboard(pieces);
+    std::cout << i << std::endl;
+  }
+  for (int i=0; i<playersInGame; i++){
+    std::cout << posEval(pieces,i) << std::endl;
+  }
+  
+  
   return 0;
 }

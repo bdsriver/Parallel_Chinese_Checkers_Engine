@@ -27,5 +27,5 @@ SearchResult threadSearch(__uint128_t occupied, std::vector<__uint128_t> pieces,
   }
   
   TableEntry e = t.lookup(hash, 0);
-  return SearchResult(e.bestMove, e.eval);
+  return SearchResult(e.bestMove, e.eval,-1);
 }

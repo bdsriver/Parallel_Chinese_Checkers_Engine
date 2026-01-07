@@ -9,7 +9,7 @@ SearchResult Search(__uint128_t *board, std::vector<__uint128_t>*pieces, SearchN
   //check table
   TableEntry t = table->lookup(node.hash,node.depth);
   if (t.valid){
-    return SearchResult(t.bestMove,t.eval);
+    return SearchResult(t.bestMove,t.eval, t.winDepth);
   }
 
   //Did this player start the search?
@@ -18,7 +18,7 @@ SearchResult Search(__uint128_t *board, std::vector<__uint128_t>*pieces, SearchN
   int moveAmount = generateMoves(move_spots,*board,(*pieces)[node.currTurn],node.currTurn);
   if (moveAmount == -1){
     //this means this is a winning position
-    return SearchResult(true);
+    return SearchResult(true, node.depth);
   }
   Move sorted_moves[MAX_MOVES];
 
@@ -31,9 +31,9 @@ SearchResult Search(__uint128_t *board, std::vector<__uint128_t>*pieces, SearchN
 
   if (node.depth == 0){
     float e = node.eval + moveVal(sorted_moves[moveAmount-1]);
-    table->insertEntry(node.hash, TableEntry(node.depth,e,sorted_moves[moveAmount-1].move));
+    table->insertEntry(node.hash, TableEntry(node.depth,e,sorted_moves[moveAmount-1].move,-1));
     //return optimal eval
-    return SearchResult(sorted_moves[moveAmount-1].move, e);
+    return SearchResult(sorted_moves[moveAmount-1].move, e,-1);
   }
   //search all possible moves and prune if possible  
   int searchTurn = node.currTurn;
@@ -61,7 +61,7 @@ SearchResult Search(__uint128_t *board, std::vector<__uint128_t>*pieces, SearchN
       unMakeMove(&(*pieces)[searchTurn], currMove.move);
       Hash::hashMove(&n.hash, searchTurn, currMove.move);
       if (r.end){
-        return SearchResult(currMove.move,500);
+        return SearchResult(currMove.move,500,r.winDepth);
       }
       if (r.eval > value){
         value = r.eval;
@@ -71,8 +71,8 @@ SearchResult Search(__uint128_t *board, std::vector<__uint128_t>*pieces, SearchN
       
       n.eval -= m_val;
     }
-    table ->insertEntry(node.hash,TableEntry(node.depth,value,bestMove.move));
-    return SearchResult(bestMove.move,value);    
+    table ->insertEntry(node.hash,TableEntry(node.depth,value,bestMove.move,-1));
+    return SearchResult(bestMove.move,value,-1);    
   }
   else{//min node
     int back = moveAmount-1;
@@ -94,7 +94,7 @@ SearchResult Search(__uint128_t *board, std::vector<__uint128_t>*pieces, SearchN
       unMakeMove(&(*pieces)[searchTurn], currMove.move);
       Hash::hashMove(&n.hash, searchTurn, currMove.move);
       if (r.end){
-        return SearchResult(currMove.move,500);
+        return SearchResult(currMove.move,500,r.winDepth);
       }
       if (r.eval < value){
         value = r.eval;
@@ -103,8 +103,8 @@ SearchResult Search(__uint128_t *board, std::vector<__uint128_t>*pieces, SearchN
       n.beta = std::min(n.beta, value);
       n.eval -= m_val;
     }
-    table ->insertEntry(node.hash,TableEntry(node.depth,value,bestMove.move));
-    return SearchResult(bestMove.move,value);
+    table ->insertEntry(node.hash,TableEntry(node.depth,value,bestMove.move,-1));
+    return SearchResult(bestMove.move,value,-1);
   }
   
 }
@@ -166,14 +166,14 @@ SearchResult ignorantSearch(__uint128_t *board, __uint128_t * pieces, SearchNode
   //check table
   TableEntry t = table->lookup(node.hash,node.depth);
   if (t.valid){
-    return SearchResult(t.bestMove,t.eval);
+    return SearchResult(t.bestMove,t.eval, t.winDepth);
   }
 
   std::pair<int,int> move_spots[MAX_MOVES];
   int moveAmount = generateMoves(move_spots,*board,*pieces,node.currTurn);
   if (moveAmount == -1){
     //this means this is a winning position
-    return SearchResult(true);
+    return SearchResult(true, node.depth);
   }
 
 
@@ -190,17 +190,18 @@ SearchResult ignorantSearch(__uint128_t *board, __uint128_t * pieces, SearchNode
     }
 
     float e = node.eval + bestVal;
-    table->insertEntry(node.hash, TableEntry(node.depth,e,bestMove));
+    table->insertEntry(node.hash, TableEntry(node.depth,e,bestMove, -1));
     //return optimal eval
-    return SearchResult(bestMove, e);
+    return SearchResult(bestMove, e, -1);
   }
 
   //find best option among all possible moves
   int back = moveAmount-1;
   std::pair<int,int> bestMove;
   float bestEval = -500;
+  int winDepth = -1;
   node.depth -= 1;
-  while(back){
+  while(back>=0){
     std::pair<int,int> currMove = move_spots[back];
     back--;
 
@@ -219,14 +220,16 @@ SearchResult ignorantSearch(__uint128_t *board, __uint128_t * pieces, SearchNode
 
     //check if we reach a winning position from here
     if (r.end){
-      return SearchResult(currMove, 500);
+      table->insertEntry(node.hash, TableEntry(node.depth+1,500,currMove,r.winDepth));
+      return SearchResult(currMove, 500, r.winDepth);
     }
 
-    if (r.eval > bestEval){
+    if (r.eval > bestEval || r.winDepth > winDepth){
       bestEval = r.eval;
       bestMove = currMove;
+      winDepth = r.winDepth;
     }
   }
-
-  return SearchResult(bestMove,bestEval);
+  table->insertEntry(node.hash, TableEntry(node.depth+1,bestEval,bestMove,winDepth));
+  return SearchResult(bestMove,bestEval, winDepth);
 }

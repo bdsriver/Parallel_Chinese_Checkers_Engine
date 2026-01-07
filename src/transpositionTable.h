@@ -12,14 +12,15 @@
 struct TableEntry{
   //This represents the depth of the search performed. If you searched 4 levels after, depth=4
   uint8_t depth;
+  int8_t winDepth;
   uint64_t hash;
   //Best move at this position
   std::pair<int,int> bestMove;
   bool valid;
   float eval;
 
-  TableEntry(uint8_t lookupDepth, float evaluation, std::pair<int,int> move) : 
-  depth(lookupDepth), eval(evaluation), bestMove(move) {valid=true;};
+  TableEntry(uint8_t lookupDepth, float evaluation, std::pair<int,int> move, int _winDepth) : 
+  depth(lookupDepth), eval(evaluation), bestMove(move), winDepth(_winDepth) {valid=true;};
   TableEntry(bool isValid) : valid(isValid) {};
   TableEntry() {};
 };

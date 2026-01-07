@@ -13,7 +13,7 @@ SearchResult ompSearch(__uint128_t occupied, std::vector<__uint128_t> pieces,
   std::uint64_t hash = Hash::initHash(pieces, playersInGame);
   
   int threadAmount = omp_get_max_threads();
-  SearchResult r = SearchResult(false);
+  SearchResult r = SearchResult(false,-1);
   
   #pragma omp parallel num_threads(threadAmount) shared(t)
   {

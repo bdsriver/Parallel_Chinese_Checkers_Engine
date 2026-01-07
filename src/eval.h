@@ -6,18 +6,20 @@
 #include <cstdint>
 #include "transpositionTable.h"
 
-#define MAX_DEPTH 6
+#define MAX_DEPTH 80
 
 //Store an evaluation for the turn player and best move, and if the player has won
+//winDepth is the depth at which the player can win. -1 is default
 struct SearchResult{
   float eval;
   //best move at the position
   std::pair<int,int> bestMove;
   bool end;
+  int winDepth;
 
-  SearchResult(std::pair<int,int> _move, float _eval) : 
-  bestMove(_move), eval(_eval) {end=false;};
-  SearchResult(bool _win) : end(_win) {};
+  SearchResult(std::pair<int,int> _move, float _eval, int _winDepth) : 
+  bestMove(_move), eval(_eval), winDepth(_winDepth) {end=false;};
+  SearchResult(bool _win, int _winDepth) : end(_win), winDepth(_winDepth) {};
 };
 
 // currturn corresponds to the player whose turn it is to move. Assume 0 goes, then 1, then 2...
