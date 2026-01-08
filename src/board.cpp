@@ -540,3 +540,23 @@ void printBitboard(std::vector<__uint128_t> pieces){
   }
   printBoard(printArr);
 }
+
+bool validMove(__uint128_t occupied, __uint128_t playerPieces, std::pair<int,int> move){
+  auto bitIsSet = [](__uint128_t n, int bit) -> bool {
+    return (n & ((__uint128_t)1 << bit) ) ;
+  };
+  if (
+    move.first < 0 || move.first > 120 || move.second < 0 || move.second > 120
+  )
+  {
+    return false;
+  }
+  if (
+    bitIsSet(playerPieces,move.first) && !bitIsSet(playerPieces,move.second) &&
+    bitIsSet(occupied, move.first) && !bitIsSet(occupied, move.second))
+    {
+      return true;
+    }
+
+  return false;
+}

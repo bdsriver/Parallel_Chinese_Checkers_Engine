@@ -63,6 +63,9 @@ void makeMove(__uint128_t *occupied, std::pair<int,int> move);
 //change the "occupied" bitboard and piece pos back after calling makeMove() and exploring tree
 void unMakeMove(__uint128_t *occupied, std::pair<int,int> move);
 
+//return true if the player with playerPieces can make the move or not
+bool validMove(__uint128_t occupied, __uint128_t playerPieces, std::pair<int,int> move);
+
 void printBoard(char board[][17]);
 
 //generate a bitboard for pices of each player's pieces
