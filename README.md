@@ -1,4 +1,8 @@
-# Parallel_Chinese_Checkers_Engine
+# Chinese_Checkers_Engine
+
+An engine for Chinese Checkers, or Sternhalma. Has a command line interface with ability to play/evaluate games for 2,3,4, or 6 players.
+
+To use it, clone this repository and run ```make``` to start the engine. Type ```help``` for a list of commands.
 
 The goal of this project is to create a Chinese Checkers engine that can work with up to 6 players in the game with speed and accuracy. There are also parallelized implementations using the [Lazy SMP](https://www.chessprogramming.org/Lazy_SMP) method. Currently, the code can be compiled with GCC 23 or later, which can just be done by cloning the repo and using the makefile. Below, the techniques used are outlined and explained.
 
@@ -12,7 +16,7 @@ A Chinese Checkers board may seem tricky to represent in a matrix because the ga
 
 ![Translation of Chinese Checkers Game Space to 2D Array](./Images/bitmap_blueprint.png)
 
-We have defined the x,y, and w axes on the right. By defining the w axis on the 2D grid as 1 move in the x direction and 1 move in the y direction, we can translate in all 3 directions despite being on the 2D matrix. For example, we can see on the right that the top left green marble is 12 spaces away from the bottom purple marble on the w axis. By starting at that same purple sapce on the left and moving 12 spaces diagonally in the w direction on the grid, we can move between those same two marbles in both domains.
+We have defined the x,y, and w axes on the right. By defining the w axis on the 2D grid as 1 move in the x direction and 1 move in the y direction, we can translate in all 3 directions despite being on the 2D matrix. For example, we can see on the right that the top left green marble is 12 spaces away from the bottom purple marble on the w axis. By starting at that same purple space on the left and moving 12 spaces diagonally in the w direction on the grid, we can move between those same two marbles in both domains.
 
 ## Bitboards
 
