@@ -3,24 +3,24 @@
 #include <cstdint>
 #include <unordered_map>
 #include <utility>
-#include <array>
-#include <mutex>
+
 #include "board.h"
 
-#define MAX_CACHE 50000
-
-struct TableEntry{
-  //This represents the depth of the search performed. If you searched 4 levels after, depth=4
-  uint8_t depth;
-  int8_t winDepth;
+struct alignas(8) TableEntry{
   uint64_t hash;
+  float eval;
   //Best move at this position
   std::pair<int,int> bestMove;
+  uint8_t depth;
+  //depth at which the player can get all piece in the goal. -1 if not found in search
+  int8_t winDepth;
+  //the highest depth where the player makes a forward move
+  uint8_t bestDepth;
+  //false for uninitialized entries
   bool valid;
-  float eval;
 
-  TableEntry(uint8_t lookupDepth, float evaluation, std::pair<int,int> move, int _winDepth) : 
-  depth(lookupDepth), eval(evaluation), bestMove(move), winDepth(_winDepth) {valid=true;};
+  TableEntry(uint8_t lookupDepth, float evaluation, std::pair<int,int> move, int _winDepth, uint8_t bDepth) : 
+  depth(lookupDepth), eval(evaluation), bestMove(move), winDepth(_winDepth), bestDepth(bDepth) {valid=true;};
   TableEntry(bool isValid) : valid(isValid) {};
   TableEntry() {};
 };

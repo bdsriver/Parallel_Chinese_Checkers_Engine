@@ -2,7 +2,6 @@
 #include <cstdint>
 #include <vector>
 #include <unordered_map>
-#include <functional>
 #include <stdio.h>
 #include <deque>
 #include <algorithm>
@@ -24,28 +23,6 @@ std::vector<std::vector<int>> startPoints;
 //changed during runtime
 std::vector<std::vector<int>> endZones;
 
-
-// '<int>' is the player's pieces
-// ' ' is an empty space
-char startBoard[BOARD_DIM][BOARD_DIM] = {
-  {' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ', 0 ,' ',' ',' ',' '},
-  {' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ', 0 , 0 ,' ',' ',' ',' '},
-  {' ',' ',' ',' ',' ',' ',' ',' ',' ',' ', 0 , 0 , 0 ,' ',' ',' ',' '},
-  {' ',' ',' ',' ',' ',' ',' ',' ',' ', 0 , 0 , 0 , 0 ,' ',' ',' ',' '},
-  {' ',' ',' ',' ', 5 , 5 , 5 , 5 ,' ',' ',' ',' ',' ', 1 , 1 , 1 , 1 },
-  {' ',' ',' ',' ', 5 , 5 , 5 ,' ',' ',' ',' ',' ',' ', 1 , 1 , 1 ,' '},
-  {' ',' ',' ',' ', 5 , 5 ,' ',' ',' ',' ',' ',' ',' ', 1 , 1 ,' ',' '},
-  {' ',' ',' ',' ', 5 ,' ',' ',' ',' ',' ',' ',' ',' ', 1 ,' ',' ',' '},
-  {' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' '},
-  {' ',' ',' ', 4 ,' ',' ',' ',' ',' ',' ',' ',' ', 2 ,' ',' ',' ',' '},
-  {' ',' ', 4 , 4 ,' ',' ',' ',' ',' ',' ',' ', 2 , 2 ,' ',' ',' ',' '},
-  {' ', 4 , 4 , 4 ,' ',' ',' ',' ',' ',' ', 2 , 2 , 2 ,' ',' ',' ',' '},
-  { 4 , 4 , 4 , 4 ,' ',' ',' ',' ',' ', 2 , 2 , 2 , 2 ,' ',' ',' ',' '},
-  {' ',' ',' ',' ', 3 , 3 , 3 , 3 ,' ',' ',' ',' ',' ',' ',' ',' ',' '},
-  {' ',' ',' ',' ', 3 , 3 , 3 ,' ',' ',' ',' ',' ',' ',' ',' ',' ',' '},
-  {' ',' ',' ',' ', 3 , 3 ,' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' '},
-  {' ',' ',' ',' ', 3 ,' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' '}
-};
 
 //used to construct startPoints and endZones, not currently in header
 std::vector<std::vector<int>> defaultStartPoints = {
@@ -271,14 +248,6 @@ void setMovesAndJumps(int playerAmount){
 
 }
 
-void copyBoard(char original[][BOARD_DIM], char copy[][BOARD_DIM]){
-  for (int i=0; i<BOARD_DIM; i++){
-    for (int j=0; j<BOARD_DIM; j++){
-      copy[j][i] = original[j][i];
-    }
-  }
-}
-
 void printBoard(char board[][17]) {
   for (int i = 0; i < 17; i++) {
     for (int j = 0; j < 17; j++) {
@@ -414,67 +383,6 @@ int generateMoves(std::pair<int,int> moveArr[MAX_MOVES],__uint128_t occupied, __
 
 
   return moveAmount;
-}
-
-std::vector<int> initPieces(char board[][BOARD_DIM], char playerID){
-  //create backwards map for this function
-  int indicesToBit[BOARD_DIM][BOARD_DIM];
-  for (int i=0; i<SPACE_AMOUNT; i++){
-    std::pair<int, int> p = bitToIndices[i];
-    indicesToBit[p.second][p.first] = i;
-  }
-
-  std::vector<int> pieceMapping;
-  for (int i=0; i<BOARD_DIM; i++){
-    for (int j=0; j<BOARD_DIM; j++){
-      if (board[j][i] == playerID){
-        pieceMapping.push_back(indicesToBit[j][i]);
-      }
-    }
-  }
-  return pieceMapping;
-}
-
-__uint128_t boardToOccupiedBitboard(char board[][BOARD_DIM]){
-  __uint128_t occupied = 0;
-
-  auto setBit = [](__uint128_t n, int bit) -> __uint128_t {
-    return (n | ((__uint128_t)1 << bit));
-  };
-
-  //create backwards map for this function
-  int indicesToBit[BOARD_DIM][BOARD_DIM];
-  for (int i=0; i<SPACE_AMOUNT; i++){
-    std::pair<int, int> p = bitToIndices[i];
-    indicesToBit[p.second][p.first] = i;
-  }
-
-  for (int i=0; i<BOARD_DIM; i++){
-    for (int j=0; j<BOARD_DIM; j++){
-      if (board[j][i] != ' '){
-        occupied = setBit(occupied,indicesToBit[j][i]);
-      }
-    }
-  }
-  return occupied;
-}
-
-void makeMove(__uint128_t *occupied, std::pair<int,int> move, int *piecePos){
-  //unset the start space and set the end space. change piecePos to new position
-  *piecePos = move.second;
-  //set the new space bit
-  *occupied = (*occupied) | ((__uint128_t)1 << move.second);
-  //unset the old space bit
-  *occupied = (*occupied) & ~(((__uint128_t)1 << move.first));
-}
-
-void unMakeMove(__uint128_t *occupied, std::pair<int,int> move, int *piecePos){
-  //unset the end space and set the start space. change piecePos to old position
-  *piecePos = move.first;
-  //set the old space bit
-  *occupied = (*occupied) | ((__uint128_t)1 << move.first);
-  //unset the new space bit
-  *occupied = (*occupied) & ~((__uint128_t)1 << move.second);
 }
 
 void makeMove(__uint128_t *occupied, std::pair<int,int> move){

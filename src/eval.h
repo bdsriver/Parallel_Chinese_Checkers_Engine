@@ -2,23 +2,24 @@
 
 #include <vector>
 #include <utility>
-#include <deque>
 #include <cstdint>
+
 #include "transpositionTable.h"
 
-#define MAX_DEPTH 80
-
-//Store an evaluation for the turn player and best move, and if the player has won
-//winDepth is the depth at which the player can win. -1 is default
+//Returned from a search function
 struct SearchResult{
   float eval;
   //best move at the position
   std::pair<int,int> bestMove;
+  //true if the player is in a winning position before doing the move
   bool end;
+  //winDepth is the depth at which the player can win. -1 is default
   int winDepth;
+  //the highest positive value move depth
+  uint8_t bestEvalDepth;
 
-  SearchResult(std::pair<int,int> _move, float _eval, int _winDepth) : 
-  bestMove(_move), eval(_eval), winDepth(_winDepth) {end=false;};
+  SearchResult(std::pair<int,int> _move, float _eval, int _winDepth, uint8_t bestDepth) : 
+  bestMove(_move), eval(_eval), winDepth(_winDepth), bestEvalDepth(bestDepth) {end=false;};
   SearchResult(bool _win, int _winDepth) : end(_win), winDepth(_winDepth) {};
 };
 
@@ -45,7 +46,7 @@ struct Move{
   Move() {};
 };
 
-
+//Currently not used
 //return the best move found at a position with the evaluation
 // distances is the value we will use to calculate heuristics
 /*  Flow (Pessimistic search):
@@ -55,7 +56,7 @@ struct Move{
     Non-turn player wants to minimize the amount of distance all non-turn players need combined
 
 */
-SearchResult Search(__uint128_t *board, std::vector<__uint128_t>*pieces, SearchNode node, TranspositionTable* table);
+//SearchResult Search(__uint128_t *board, std::vector<__uint128_t>*pieces, SearchNode node, TranspositionTable* table);
 
 SearchResult ignorantSearch(__uint128_t *board, __uint128_t * pieces, SearchNode node,TranspositionTable* table);
 

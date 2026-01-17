@@ -1,10 +1,12 @@
 #include "eval.h"
 #include "transpositionTable.h"
-#include <algorithm>
+
 #include <vector>
-#include <iostream>
+#include <utility>
+#include <cstdint>
 
 
+/*
 SearchResult Search(__uint128_t *board, std::vector<__uint128_t>*pieces, SearchNode node, TranspositionTable* table){
   //check table
   TableEntry t = table->lookup(node.hash,node.depth);
@@ -107,7 +109,7 @@ SearchResult Search(__uint128_t *board, std::vector<__uint128_t>*pieces, SearchN
     return SearchResult(bestMove.move,value,-1);
   }
   
-}
+}*/
 
 float posEval(std::vector<__uint128_t> pieces, int currTurn){
   float total = 0;
@@ -166,7 +168,7 @@ SearchResult ignorantSearch(__uint128_t *board, __uint128_t * pieces, SearchNode
   //check table
   TableEntry t = table->lookup(node.hash,node.depth);
   if (t.valid){
-    return SearchResult(t.bestMove,t.eval, t.winDepth);
+    return SearchResult(t.bestMove,t.eval, t.winDepth, t.bestDepth);
   }
 
   std::pair<int,int> move_spots[MAX_MOVES];
@@ -190,9 +192,9 @@ SearchResult ignorantSearch(__uint128_t *board, __uint128_t * pieces, SearchNode
     }
 
     float e = node.eval + bestVal;
-    table->insertEntry(node.hash, TableEntry(node.depth,e,bestMove, -1));
+    table->insertEntry(node.hash, TableEntry(node.depth,e,bestMove, -1, node.depth));
     //return optimal eval
-    return SearchResult(bestMove, e, -1);
+    return SearchResult(bestMove, e, -1, node.depth);
   }
 
   //find best option among all possible moves
@@ -201,6 +203,7 @@ SearchResult ignorantSearch(__uint128_t *board, __uint128_t * pieces, SearchNode
   float bestEval = -500;
   int winDepth = -1;
   node.depth -= 1;
+  uint8_t bestDepth = 0;
   while(back>=0){
     std::pair<int,int> currMove = move_spots[back];
     back--;
@@ -208,28 +211,49 @@ SearchResult ignorantSearch(__uint128_t *board, __uint128_t * pieces, SearchNode
     makeMove(board,currMove);
     makeMove(pieces,currMove);
     Hash::hashMove(&(node.hash), node.currTurn, currMove);
-    float tempEval = moveVal(currMove,node.currTurn, true);
-    node.eval += tempEval;
+    float currMoveVal = moveVal(currMove,node.currTurn, true);
+    node.eval += currMoveVal;
 
     SearchResult r = ignorantSearch(board, pieces, node, table);
 
-    node.eval -= tempEval;
+    node.eval -= currMoveVal;
     Hash::hashMove(&(node.hash), node.currTurn, currMove);
     unMakeMove(pieces, currMove);
     unMakeMove(board, currMove);
 
     //check if we reach a winning position from here
     if (r.end){
-      table->insertEntry(node.hash, TableEntry(node.depth+1,500,currMove,r.winDepth));
-      return SearchResult(currMove, 500, r.winDepth);
+      table->insertEntry(node.hash, TableEntry(node.depth+1,500,currMove,r.winDepth, node.depth+1));
+      return SearchResult(currMove, 500, r.winDepth, node.depth+1);
     }
 
-    if (r.eval > bestEval || r.winDepth > winDepth){
+    if (r.winDepth > winDepth){
       bestEval = r.eval;
       bestMove = currMove;
       winDepth = r.winDepth;
+      bestDepth = r.bestEvalDepth;
+      continue;
+    }
+    
+    //if we have equal value take the result with better intermediate value
+    if (r.eval == bestEval && r.bestEvalDepth > bestDepth){
+      bestEval = r.eval;
+      bestMove = currMove;
+      winDepth = r.winDepth;
+      bestDepth = r.bestEvalDepth;
+      continue;
+    }
+
+    if (r.eval > bestEval){
+      bestEval = r.eval;
+      bestMove = currMove;
+      winDepth = r.winDepth;
+      bestDepth = r.bestEvalDepth;
     }
   }
-  table->insertEntry(node.hash, TableEntry(node.depth+1,bestEval,bestMove,winDepth));
-  return SearchResult(bestMove,bestEval, winDepth);
+  if (moveVal(bestMove,node.currTurn,true) > 0){
+    bestDepth = node.depth+1;
+  }
+  table->insertEntry(node.hash, TableEntry(node.depth+1,bestEval,bestMove,winDepth, bestDepth));
+  return SearchResult(bestMove,bestEval, winDepth, bestDepth);
 }
