@@ -55,48 +55,27 @@ bool inBounds[BOARD_DIM][BOARD_DIM] = {
 };
 
 //A mapping of a single number to the location in 2D array int -> (x,y)
-std::unordered_map <int, std::pair<int,int>> bitToIndices = {
-  {0,std::pair<int,int>(12,0)},{1,std::pair<int,int>(11,1)},{2,std::pair<int,int>(12,1)},        
-  {3,std::pair<int,int>(10,2)},{4,std::pair<int,int>(11,2)},{5,std::pair<int,int>(12,2)},        
-  {6,std::pair<int,int>(9,3)},{7,std::pair<int,int>(10,3)},{8,std::pair<int,int>(11,3)},
-  {9,std::pair<int,int>(12,3)},{10,std::pair<int,int>(4,4)},{11,std::pair<int,int>(5,4)},        
-  {12,std::pair<int,int>(6,4)},{13,std::pair<int,int>(7,4)},{14,std::pair<int,int>(8,4)},        
-  {15,std::pair<int,int>(9,4)},{16,std::pair<int,int>(10,4)},{17,std::pair<int,int>(11,4)},      
-  {18,std::pair<int,int>(12,4)},{19,std::pair<int,int>(13,4)},{20,std::pair<int,int>(14,4)},     
-  {21,std::pair<int,int>(15,4)},{22,std::pair<int,int>(16,4)},{23,std::pair<int,int>(4,5)},      
-  {24,std::pair<int,int>(5,5)},{25,std::pair<int,int>(6,5)},{26,std::pair<int,int>(7,5)},        
-  {27,std::pair<int,int>(8,5)},{28,std::pair<int,int>(9,5)},{29,std::pair<int,int>(10,5)},       
-  {30,std::pair<int,int>(11,5)},{31,std::pair<int,int>(12,5)},{32,std::pair<int,int>(13,5)},     
-  {33,std::pair<int,int>(14,5)},{34,std::pair<int,int>(15,5)},{35,std::pair<int,int>(4,6)},      
-  {36,std::pair<int,int>(5,6)},{37,std::pair<int,int>(6,6)},{38,std::pair<int,int>(7,6)},        
-  {39,std::pair<int,int>(8,6)},{40,std::pair<int,int>(9,6)},{41,std::pair<int,int>(10,6)},       
-  {42,std::pair<int,int>(11,6)},{43,std::pair<int,int>(12,6)},{44,std::pair<int,int>(13,6)},     
-  {45,std::pair<int,int>(14,6)},{46,std::pair<int,int>(4,7)},{47,std::pair<int,int>(5,7)},       
-  {48,std::pair<int,int>(6,7)},{49,std::pair<int,int>(7,7)},{50,std::pair<int,int>(8,7)},        
-  {51,std::pair<int,int>(9,7)},{52,std::pair<int,int>(10,7)},{53,std::pair<int,int>(11,7)},      
-  {54,std::pair<int,int>(12,7)},{55,std::pair<int,int>(13,7)},{56,std::pair<int,int>(4,8)},      
-  {57,std::pair<int,int>(5,8)},{58,std::pair<int,int>(6,8)},{59,std::pair<int,int>(7,8)},        
-  {60,std::pair<int,int>(8,8)},{61,std::pair<int,int>(9,8)},{62,std::pair<int,int>(10,8)},       
-  {63,std::pair<int,int>(11,8)},{64,std::pair<int,int>(12,8)},{65,std::pair<int,int>(3,9)},      
-  {66,std::pair<int,int>(4,9)},{67,std::pair<int,int>(5,9)},{68,std::pair<int,int>(6,9)},        
-  {69,std::pair<int,int>(7,9)},{70,std::pair<int,int>(8,9)},{71,std::pair<int,int>(9,9)},        
-  {72,std::pair<int,int>(10,9)},{73,std::pair<int,int>(11,9)},{74,std::pair<int,int>(12,9)},     
-  {75,std::pair<int,int>(2,10)},{76,std::pair<int,int>(3,10)},{77,std::pair<int,int>(4,10)},     
-  {78,std::pair<int,int>(5,10)},{79,std::pair<int,int>(6,10)},{80,std::pair<int,int>(7,10)},     
-  {81,std::pair<int,int>(8,10)},{82,std::pair<int,int>(9,10)},{83,std::pair<int,int>(10,10)},    
-  {84,std::pair<int,int>(11,10)},{85,std::pair<int,int>(12,10)},{86,std::pair<int,int>(1,11)},   
-  {87,std::pair<int,int>(2,11)},{88,std::pair<int,int>(3,11)},{89,std::pair<int,int>(4,11)},     
-  {90,std::pair<int,int>(5,11)},{91,std::pair<int,int>(6,11)},{92,std::pair<int,int>(7,11)},     
-  {93,std::pair<int,int>(8,11)},{94,std::pair<int,int>(9,11)},{95,std::pair<int,int>(10,11)},    
-  {96,std::pair<int,int>(11,11)},{97,std::pair<int,int>(12,11)},{98,std::pair<int,int>(0,12)},   
-  {99,std::pair<int,int>(1,12)},{100,std::pair<int,int>(2,12)},{101,std::pair<int,int>(3,12)},   
-  {102,std::pair<int,int>(4,12)},{103,std::pair<int,int>(5,12)},{104,std::pair<int,int>(6,12)},  
-  {105,std::pair<int,int>(7,12)},{106,std::pair<int,int>(8,12)},{107,std::pair<int,int>(9,12)},  
-  {108,std::pair<int,int>(10,12)},{109,std::pair<int,int>(11,12)},{110,std::pair<int,int>(12,12)},
-  {111,std::pair<int,int>(4,13)},{112,std::pair<int,int>(5,13)},{113,std::pair<int,int>(6,13)},  
-  {114,std::pair<int,int>(7,13)},{115,std::pair<int,int>(4,14)},{116,std::pair<int,int>(5,14)},  
-  {117,std::pair<int,int>(6,14)},{118,std::pair<int,int>(4,15)},{119,std::pair<int,int>(5,15)},  
-  {120,std::pair<int,int>(4,16)}  
+std::unordered_map <int, std::pair<uint8_t,uint8_t>> bitToIndices = {
+  {0, {12,0}}, {1, {11,1}}, {2, {12,1}}, {3, {10,2}}, {4, {11,2}}, {5, {12,2}},        
+  {6, {9,3}}, {7, {10,3}}, {8, {11,3}}, {9, {12,3}}, {10, {4,4}}, {11, {5,4}},        
+  {12, {6,4}}, {13, {7,4}}, {14, {8,4}}, {15, {9,4}}, {16, {10,4}}, {17, {11,4}},      
+  {18, {12,4}}, {19, {13,4}}, {20, {14,4}}, {21, {15,4}}, {22, {16,4}}, {23, {4,5}},      
+  {24, {5,5}}, {25, {6,5}}, {26, {7,5}}, {27, {8,5}}, {28, {9,5}}, {29, {10,5}},       
+  {30, {11,5}}, {31, {12,5}}, {32, {13,5}}, {33, {14,5}}, {34, {15,5}}, {35, {4,6}},      
+  {36, {5,6}}, {37, {6,6}}, {38, {7,6}}, {39, {8,6}}, {40, {9,6}}, {41, {10,6}},       
+  {42, {11,6}}, {43, {12,6}}, {44, {13,6}}, {45, {14,6}}, {46, {4,7}}, {47, {5,7}},       
+  {48, {6,7}}, {49, {7,7}}, {50, {8,7}}, {51, {9,7}}, {52, {10,7}}, {53, {11,7}},      
+  {54, {12,7}}, {55, {13,7}}, {56, {4,8}}, {57, {5,8}}, {58, {6,8}}, {59, {7,8}},        
+  {60, {8,8}}, {61, {9,8}}, {62, {10,8}}, {63, {11,8}}, {64, {12,8}}, {65, {3,9}},      
+  {66, {4,9}}, {67, {5,9}}, {68, {6,9}}, {69, {7,9}}, {70, {8,9}}, {71, {9,9}},        
+  {72, {10,9}}, {73, {11,9}}, {74, {12,9}}, {75, {2,10}}, {76, {3,10}}, {77, {4,10}},     
+  {78, {5,10}}, {79, {6,10}}, {80, {7,10}}, {81, {8,10}}, {82, {9,10}}, {83, {10,10}},    
+  {84, {11,10}}, {85, {12,10}}, {86, {1,11}}, {87, {2,11}}, {88, {3,11}}, {89, {4,11}},     
+  {90, {5,11}}, {91, {6,11}}, {92, {7,11}}, {93, {8,11}}, {94, {9,11}}, {95, {10,11}},    
+  {96, {11,11}}, {97, {12,11}}, {98, {0,12}}, {99, {1,12}}, {100, {2,12}}, {101, {3,12}},   
+  {102, {4,12}}, {103, {5,12}}, {104, {6,12}}, {105, {7,12}}, {106, {8,12}}, {107, {9,12}},  
+  {108, {10,12}}, {109, {11,12}}, {110, {12,12}}, {111, {4,13}}, {112, {5,13}}, {113, {6,13}},  
+  {114, {7,13}}, {115, {4,14}}, {116, {5,14}}, {117, {6,14}}, {118, {4,15}}, {119, {5,15}}, {120, {4,16}}  
 };
 
 //refer to diagram for mapping explanation
@@ -115,14 +94,14 @@ void setMovesAndJumps(int playerAmount){
   //create backwards map for this function
   int indicesToBit[BOARD_DIM][BOARD_DIM];
   for (int i=0; i<SPACE_AMOUNT; i++){
-    std::pair<int, int> p = bitToIndices[i];
+    std::pair<uint8_t, uint8_t> p = bitToIndices[i];
     indicesToBit[p.second][p.first] = i;
   }
   
   halfJumps.resize(SPACE_AMOUNT);
   //for every space, map out the moves and jumps you can make from there
   for (int i=0;i<SPACE_AMOUNT;i++){
-    std::pair<int, int> p = bitToIndices[i];
+    std::pair<uint8_t, uint8_t> p = bitToIndices[i];
     int x = p.first;
     int y = p.second;
     std::vector<int> moves_possible, jumps_possible;
@@ -269,7 +248,7 @@ void printBoard(char board[][17]) {
   }
 }
 
-int generateMoves(std::pair<int,int> moveArr[MAX_MOVES],__uint128_t occupied, __uint128_t pieces, int player){
+int generateMoves(std::pair<uint8_t,uint8_t> moveArr[MAX_MOVES],__uint128_t occupied, __uint128_t pieces, int player){
   int moveAmount = 0;
 
   auto setBit = [](__uint128_t n, int bit) -> __uint128_t {
@@ -304,13 +283,13 @@ int generateMoves(std::pair<int,int> moveArr[MAX_MOVES],__uint128_t occupied, __
     while (low){
       int trailing_zeros = __builtin_ctzll(low);//supported by gcc
       low &= low-1; //clear that set bit
-      moveArr[moveAmount] = std::pair<int,int>(startPos,trailing_zeros);
+      moveArr[moveAmount] = {startPos,trailing_zeros};
       moveAmount++;
     }
     while (high){
       int trailing_zeros = __builtin_ctzll(high) + 64;//add 64 for high register
       high &= high-1;
-      moveArr[moveAmount] = std::pair<int,int>(startPos,trailing_zeros);
+      moveArr[moveAmount] = {startPos,trailing_zeros};
       moveAmount++;
     }
   }
@@ -358,7 +337,7 @@ int generateMoves(std::pair<int,int> moveArr[MAX_MOVES],__uint128_t occupied, __
         int trailing_zeros = __builtin_ctzll(low);
         low &= low-1;
         if (bitIsSet(occupied,halfJumps[startSpace][trailing_zeros])  && bitIsSet(~jumpedTo,trailing_zeros)){
-          moveArr[moveAmount] = std::pair<int,int>(startPos,trailing_zeros);
+          moveArr[moveAmount] = {startPos,trailing_zeros};
           moveAmount++;
           back++;
           jumpPoints[back] = trailing_zeros;
@@ -371,7 +350,7 @@ int generateMoves(std::pair<int,int> moveArr[MAX_MOVES],__uint128_t occupied, __
         high &= high-1;
         //check that there is a piece to jump over && we have not visited the landing space on our search
         if (bitIsSet(occupied,halfJumps[startSpace][trailing_zeros]) && bitIsSet(~jumpedTo,trailing_zeros)){
-          moveArr[moveAmount] = std::pair<int,int>(startPos,trailing_zeros);
+          moveArr[moveAmount] = {startPos,trailing_zeros};
           moveAmount++;
           back++;
           jumpPoints[back] = trailing_zeros;
@@ -385,14 +364,14 @@ int generateMoves(std::pair<int,int> moveArr[MAX_MOVES],__uint128_t occupied, __
   return moveAmount;
 }
 
-void makeMove(__uint128_t *occupied, std::pair<int,int> move){
+void makeMove(__uint128_t *occupied, std::pair<uint8_t,uint8_t> move){
   //set the new space bit
   *occupied = (*occupied) | ((__uint128_t)1 << move.second);
   //unset the old space bit
   *occupied = (*occupied) & ~(((__uint128_t)1 << move.first));
 }
 
-void unMakeMove(__uint128_t *occupied, std::pair<int,int> move){
+void unMakeMove(__uint128_t *occupied, std::pair<uint8_t,uint8_t> move){
   //set the old space bit
   *occupied = (*occupied) | ((__uint128_t)1 << move.first);
   //unset the new space bit
@@ -436,26 +415,24 @@ void printBitboard(std::vector<__uint128_t> pieces){
     while (low){
       int trailing_zeros = __builtin_ctzll(low);//supported by gcc
       low &= low-1; //clear that set bit
-      std::pair<int,int> ind = bitToIndices[trailing_zeros];
+      std::pair<uint8_t,uint8_t> ind = bitToIndices[trailing_zeros];
       printArr[ind.second][ind.first] = i;
     }
     while (high){
       int trailing_zeros = __builtin_ctzll(high)+64;//add 64 for high address
       high &= high-1;
-      std::pair<int,int> ind = bitToIndices[trailing_zeros];
+      std::pair<uint8_t,uint8_t> ind = bitToIndices[trailing_zeros];
       printArr[ind.second][ind.first] = i;
     }
   }
   printBoard(printArr);
 }
 
-bool validMove(__uint128_t occupied, __uint128_t playerPieces, std::pair<int,int> move){
-  auto bitIsSet = [](__uint128_t n, int bit) -> bool {
+bool validMove(__uint128_t occupied, __uint128_t playerPieces, std::pair<uint8_t,uint8_t> move){
+  auto bitIsSet = [](__uint128_t n, uint8_t bit) -> bool {
     return (n & ((__uint128_t)1 << bit) ) ;
   };
-  if (
-    move.first < 0 || move.first > 120 || move.second < 0 || move.second > 120
-  )
+  if ( move.first > 120 || move.second > 120)
   {
     return false;
   }

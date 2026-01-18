@@ -16,7 +16,7 @@ SearchResult Search(__uint128_t *board, std::vector<__uint128_t>*pieces, SearchN
 
   //Did this player start the search?
   bool isStartPlayer = true ? (node.startPlayer == node.currTurn) : false;
-  std::pair<int,int> move_spots[MAX_MOVES];
+  std::pair<uint8_t,uint8_t> move_spots[MAX_MOVES];
   int moveAmount = generateMoves(move_spots,*board,(*pieces)[node.currTurn],node.currTurn);
   if (moveAmount == -1){
     //this means this is a winning position
@@ -144,7 +144,7 @@ float moveVal(Move m){
   return val;
 }
 
-float moveVal(std::pair<int,int> move, int playerNum, bool isStartPlayer){
+float moveVal(std::pair<uint8_t,uint8_t> move, int playerNum, bool isStartPlayer){
   float val = 0;
   val += pieceValues[playerNum][move.first];
   val -= pieceValues[playerNum][move.second];
@@ -171,7 +171,7 @@ SearchResult ignorantSearch(__uint128_t *board, __uint128_t * pieces, SearchNode
     return SearchResult(t.bestMove,t.eval, t.winDepth, t.bestDepth);
   }
 
-  std::pair<int,int> move_spots[MAX_MOVES];
+  std::pair<uint8_t,uint8_t> move_spots[MAX_MOVES];
   int moveAmount = generateMoves(move_spots,*board,*pieces,node.currTurn);
   if (moveAmount == -1){
     //this means this is a winning position
@@ -181,7 +181,7 @@ SearchResult ignorantSearch(__uint128_t *board, __uint128_t * pieces, SearchNode
 
   if (node.depth == 0){
     //find best value move out of current options
-    std::pair <int,int> bestMove = move_spots[0];
+    std::pair<uint8_t,uint8_t> bestMove = move_spots[0];
     float bestVal = moveVal(bestMove, node.currTurn, true);
     for(int i=1; i<moveAmount; i++){
       float compVal = moveVal(move_spots[i],node.currTurn,true);
@@ -199,13 +199,13 @@ SearchResult ignorantSearch(__uint128_t *board, __uint128_t * pieces, SearchNode
 
   //find best option among all possible moves
   int back = moveAmount-1;
-  std::pair<int,int> bestMove;
+  std::pair<uint8_t,uint8_t> bestMove;
   float bestEval = -500;
   int winDepth = -1;
   node.depth -= 1;
   uint8_t bestDepth = 0;
   while(back>=0){
-    std::pair<int,int> currMove = move_spots[back];
+    std::pair<uint8_t,uint8_t> currMove = move_spots[back];
     back--;
 
     makeMove(board,currMove);

@@ -10,7 +10,7 @@
 struct SearchResult{
   float eval;
   //best move at the position
-  std::pair<int,int> bestMove;
+  std::pair<uint8_t,uint8_t> bestMove;
   //true if the player is in a winning position before doing the move
   bool end;
   //winDepth is the depth at which the player can win. -1 is default
@@ -18,7 +18,7 @@ struct SearchResult{
   //the highest positive value move depth
   uint8_t bestEvalDepth;
 
-  SearchResult(std::pair<int,int> _move, float _eval, int _winDepth, uint8_t bestDepth) : 
+  SearchResult(std::pair<uint8_t,uint8_t> _move, float _eval, int _winDepth, uint8_t bestDepth) : 
   bestMove(_move), eval(_eval), winDepth(_winDepth), bestEvalDepth(bestDepth) {end=false;};
   SearchResult(bool _win, int _winDepth) : end(_win), winDepth(_winDepth) {};
 };
@@ -38,10 +38,10 @@ struct SearchNode
 
 struct Move{
   bool isStartPlayer;
-  std::pair<int,int> move;
+  std::pair<uint8_t,uint8_t> move;
   int playerNum;
 
-  Move(std::pair<int,int> _move, bool _isStartPlayer, int _playerNum) :
+  Move(std::pair<uint8_t,uint8_t> _move, bool _isStartPlayer, int _playerNum) :
   move(_move), isStartPlayer(_isStartPlayer), playerNum(_playerNum) {};
   Move() {};
 };
@@ -64,6 +64,6 @@ float posEval(std::vector<__uint128_t> pieces, int currTurn);
 
 float moveVal(Move m);
 
-float moveVal(std::pair<int,int> move, int playerNum, bool isStartPlayer);
+float moveVal(std::pair<uint8_t,uint8_t>, int playerNum, bool isStartPlayer);
 
 bool operator<(Move m1,Move m2);

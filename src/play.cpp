@@ -32,6 +32,8 @@ void play(){
     std::string command;
     std::getline(ss, command, ' ');
 
+    std::cout << std::endl;
+
     if (command == "board"){
       printBitboard(pieces);
       std::cout << "Turn Player: " << currTurn << std::endl;
@@ -86,7 +88,7 @@ void play(){
       double timeSearch = std::chrono::duration<double>(end - start).count();
 
       std::cout << "Search Time: " << timeSearch << " seconds." << std::endl;
-      std::cout << "Best Move: " << r.bestMove.first << ',' << r.bestMove.second << std::endl;
+      std::cout << "Best Move: " << (int)r.bestMove.first << ',' << (int)r.bestMove.second << std::endl;
 
     }
 
@@ -113,7 +115,7 @@ void play(){
       }
 
       int move[2];
-      std::pair<int,int> myMove;
+      std::pair<uint8_t,uint8_t> myMove;
       std::string spaceString;
       //validate depthString as a number
       try{
@@ -122,7 +124,7 @@ void play(){
         std::getline(ss, spaceString, ' ');
         move[1] = std::stoi(spaceString);
         
-        myMove = std::pair<int,int>(move[0],move[1]);
+        myMove = {move[0],move[1]};
         if (!validMove(occupied, pieces[currTurn], myMove)){
           throw "Invalid Move";
         }
@@ -181,7 +183,7 @@ void play(){
         std::cout << "Invalid command. Type help for info." << std::endl;
       }
     }
-    
+    std::cout << std::endl;
   }
 
 }

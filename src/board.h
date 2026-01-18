@@ -15,7 +15,7 @@
 extern int playersInGame;
 //access space (x,y) with inBounds[y][x]
 extern bool inBounds[][BOARD_DIM];
-extern std::unordered_map<int, std::pair<int,int>> bitToIndices;
+extern std::unordered_map<int, std::pair<uint8_t,uint8_t>> bitToIndices;
 extern __uint128_t moves[SPACE_AMOUNT];
 extern __uint128_t jumps[SPACE_AMOUNT];
 //mapping of the location of the end of the jump to the location of the intermediate space
@@ -38,16 +38,16 @@ void setMovesAndJumps(int playerAmount=6);
 //occupied is a bitboard of piece locations on the board
 //pieces is a bitboard of only the turn player's piece
 //return -1 if it is a winning position
-int generateMoves(std::pair<int,int> moveArr[MAX_MOVES] ,__uint128_t occupied, __uint128_t pieces, int player);
+int generateMoves(std::pair<uint8_t,uint8_t> moveArr[MAX_MOVES] ,__uint128_t occupied, __uint128_t pieces, int player);
 
 // change the "occipied" bitboard and piece pos to represent the new position
-void makeMove(__uint128_t *occupied, std::pair<int,int> move);
+void makeMove(__uint128_t *occupied, std::pair<uint8_t,uint8_t> move);
 
 //change the "occupied" bitboard and piece pos back after calling makeMove() and exploring tree
-void unMakeMove(__uint128_t *occupied, std::pair<int,int> move);
+void unMakeMove(__uint128_t *occupied, std::pair<uint8_t,uint8_t> move);
 
 //return true if the player with playerPieces can make the move or not
-bool validMove(__uint128_t occupied, __uint128_t playerPieces, std::pair<int,int> move);
+bool validMove(__uint128_t occupied, __uint128_t playerPieces, std::pair<uint8_t,uint8_t> move);
 
 void printBoard(char board[][17]);
 
