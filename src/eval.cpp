@@ -194,7 +194,8 @@ SearchResult ignorantSearch(__uint128_t *board, __uint128_t * pieces, SearchNode
     float e = node.eval + bestVal;
     table->insertEntry(node.hash, TableEntry(node.depth,e,bestMove, -1, node.depth));
     //return optimal eval
-    return SearchResult(bestMove, e, -1, node.depth);
+    //set best depth to be 1 higher if the move is positive
+    return SearchResult(bestMove, e, -1, (bestVal > 0 ? 1:0));
   }
 
   //find best option among all possible moves
@@ -223,10 +224,14 @@ SearchResult ignorantSearch(__uint128_t *board, __uint128_t * pieces, SearchNode
 
     //check if we reach a winning position from here
     if (r.end){
-      table->insertEntry(node.hash, TableEntry(node.depth+1,500,currMove,r.winDepth, node.depth+1));
-      return SearchResult(currMove, 500, r.winDepth, node.depth+1);
+      table->insertEntry(node.hash, TableEntry(node.depth+1,500,currMove,r.winDepth, node.depth+2));
+      return SearchResult(currMove, 500, r.winDepth, node.depth+2);
     }
-
+    
+    if (currMoveVal > 0){
+      r.bestEvalDepth = node.depth+2;
+    }
+    
     if (r.winDepth > winDepth){
       bestEval = r.eval;
       bestMove = currMove;
@@ -236,7 +241,7 @@ SearchResult ignorantSearch(__uint128_t *board, __uint128_t * pieces, SearchNode
     }
     
     //if we have equal value take the result with better intermediate value
-    if (r.eval == bestEval && r.bestEvalDepth > bestDepth){
+    if (r.eval == bestEval && r.bestEvalDepth > bestDepth && r.winDepth >= winDepth){
       bestEval = r.eval;
       bestMove = currMove;
       winDepth = r.winDepth;
@@ -252,7 +257,7 @@ SearchResult ignorantSearch(__uint128_t *board, __uint128_t * pieces, SearchNode
     }
   }
   if (moveVal(bestMove,node.currTurn,true) > 0){
-    bestDepth = node.depth+1;
+    bestDepth = node.depth+2;
   }
   table->insertEntry(node.hash, TableEntry(node.depth+1,bestEval,bestMove,winDepth, bestDepth));
   return SearchResult(bestMove,bestEval, winDepth, bestDepth);
