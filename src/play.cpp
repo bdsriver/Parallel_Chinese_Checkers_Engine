@@ -90,6 +90,13 @@ void play(){
       std::cout << "Search Time: " << timeSearch << " seconds." << std::endl;
       std::cout << "Best Move: " << (int)r.bestMove.first << ',' << (int)r.bestMove.second << std::endl;
 
+      uint8_t jumpArr[64];
+      int pathLen = generatePath(jumpArr, r.bestMove, occupied);
+      std::cout << "Path: ";
+      for (int i=0; i<pathLen; i++){
+        std::cout << (int)jumpArr[i] << ' ';
+      }
+      std::cout << std::endl;
     }
 
     else if (command == "move"){

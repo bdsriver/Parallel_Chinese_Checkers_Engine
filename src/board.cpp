@@ -445,3 +445,84 @@ bool validMove(__uint128_t occupied, __uint128_t playerPieces, std::pair<uint8_t
 
   return false;
 }
+
+int generatePath(uint8_t jumpArr[64],std::pair<uint8_t,uint8_t> move, __uint128_t occupied, int jumpsMade,
+__uint128_t jumpedTo){
+  jumpArr[jumpsMade] = move.first;
+
+  auto setBit = [](__uint128_t n, int bit) -> __uint128_t {
+    return (n | ((__uint128_t)1 << bit));
+  };
+  auto unsetBit = [](__uint128_t n, int bit) -> __uint128_t {
+    return (n & (~((__uint128_t)1 << bit)));
+  };
+  auto bitIsSet = [](__uint128_t n, int bit) -> bool {
+    return (n & ((__uint128_t)1 << bit) ) ;
+  };
+
+  // base case: we have moved the piece all the way to its destination
+  if (move.first ==  move.second){
+    return 1;
+  }
+  
+  if (jumpsMade == 0){
+    //Generate one-space moves
+    __uint128_t pieceMoves = moves[move.first] & (~occupied);
+    //find set bits to get possible piece squares
+    //split 128 bit uint into 2 64 bit uints
+    uint64_t low = (uint64_t)pieceMoves;
+    uint64_t high = (uint64_t)(pieceMoves >> 64);
+    while (low){
+      int trailing_zeros = __builtin_ctzll(low);//supported by gcc
+      low &= low-1; //clear that set bit
+      //check if we can do an immediate hop to the end space
+      if (trailing_zeros == move.second){
+        jumpArr[1] = move.second;
+        return 2;
+      }
+    }
+    while (high){
+      int trailing_zeros = __builtin_ctzll(high) + 64;//add 64 for high register
+      high &= high-1;
+      if (trailing_zeros == move.second){
+        jumpArr[1] = move.second;
+        return 2;
+      }
+    }
+  }
+
+  //Generate jumps
+  // "hashmap" to check if we already jumped to a spot
+  jumpedTo = setBit(jumpedTo, move.first);
+
+  //add all possible jumps to stack
+  //first compute jumps and then check if their intermediate space is occupied to verify
+  __uint128_t pieceJumps = jumps[move.first] & (~occupied);
+  uint64_t low = (uint64_t)pieceJumps;
+  uint64_t high = (uint64_t)(pieceJumps >> 64);
+  while (low){
+    int trailing_zeros = __builtin_ctzll(low);
+    low &= low-1;
+    if (bitIsSet(occupied,halfJumps[move.first][trailing_zeros])  && bitIsSet(~jumpedTo,trailing_zeros)){
+      jumpArr[jumpsMade+1] = trailing_zeros;
+      int jumpsToEnd = generatePath(jumpArr, {trailing_zeros,move.second}, occupied, jumpsMade+1, jumpedTo);
+      if (jumpsToEnd != -1){
+        return jumpsToEnd + 1;
+      }
+    }        
+  }
+  while (high){
+    int trailing_zeros = __builtin_ctzll(high) + 64;//add 64 for high address
+    high &= high-1;
+    //check that there is a piece to jump over && we have not visited the landing space on our search
+    if (bitIsSet(occupied,halfJumps[move.first][trailing_zeros])  && bitIsSet(~jumpedTo,trailing_zeros)){
+      jumpArr[jumpsMade+1] = trailing_zeros;
+      int jumpsToEnd = generatePath(jumpArr, {trailing_zeros,move.second}, occupied, jumpsMade+1, jumpedTo);
+      if (jumpsToEnd != -1){
+        return jumpsToEnd + 1;
+      }
+    }
+  }
+
+  return -1;
+}

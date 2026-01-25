@@ -58,3 +58,10 @@ std::vector<__uint128_t> pieceVectorToBitboards(std::vector<std::vector<int>> pi
 __uint128_t pieceVectorToBoard(std::vector<std::vector<int>> pieces);
 
 void printBitboard(std::vector<__uint128_t> pieces);
+
+//Return an int with the amount of jumps until the piece reaches the spot
+// Returns -1 if it is not possible
+// jumpArr will be changed to an array with the entire path it takes to complete a move
+// recursive function. jumpsMade and jumpedTo do not need to be given arguments
+int generatePath(uint8_t jumpArr[64],std::pair<uint8_t,uint8_t> move, __uint128_t occupied, int jumpsMade=0,
+__uint128_t jumpedTo=0);
